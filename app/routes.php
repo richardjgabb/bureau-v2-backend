@@ -11,20 +11,34 @@ use App\Controllers\StatsController;
 use Slim\App;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Routing\RouteCollectorProxy;
 
 return function (App $app) {
     $container = $app->getContainer();
 
-    $app->get('/api/players', [PlayerController::class, 'index']);
-    $app->get('/api/players/{playerId}', [PlayerStatsController::class, 'show']);
-    $app->get('/api/stats', [StatsController::class, 'index']);
-    $app->get('/api/games', [GameController::class, 'index']);
-    $app->get('/api/scores/{gameId}', [ScoresController::class, 'show']);
-    $app->get('/api/games/{gameId}', [GameController::class, 'show']);
-    $app->get('/api/players/{playerId}/stats/{gameId}', PlayerStatsController::class);
-    $app->get('/api/login', LoginController::class);
-    $app->get('/api/newGame', [GameController::class, 'newGame']);
-    $app->post('/api/register', RegisterUserController::class);
+    $app->group('/api', function (RouteCollectorProxy $app) {
+
+        $app->group('/players', function (RouteCollectorProxy $app) {
+            $app->get('', [PlayerController::class, 'index']);
+            $app->get('{playerId}/stats/{gameId}', PlayerStatsController::class);
+            $app->get('/{playerId}', [PlayerStatsController::class, 'show']);
+        });
+
+        $app->group('/games', function (RouteCollectorProxy $app) {
+            $app->get('', [GameController::class, 'index']);
+            $app->get('/{gameId}', [GameController::class, 'show']);
+        });
+
+        $app->group('/scores', function (RouteCollectorProxy $app) {
+            $app->get('/{gameId}', [ScoresController::class, 'show']);
+            $app->post('/{gameId}', [ScoresController::class, 'store']);
+        });
+
+        $app->get('/stats', [StatsController::class, 'index']);
+        $app->get('/login', LoginController::class);
+        $app->get('/newGame', [GameController::class, 'newGame']);
+        $app->post('/register', RegisterUserController::class);
+    });
 
 
 // In production, Run npm run build and put the build folder in the backend/public folder

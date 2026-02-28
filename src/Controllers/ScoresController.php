@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Classes\StatusCode;
 use App\Repositories\ScoreRepository;
 use App\Services\ScoreFormatterService;
+use Exception;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Http\Interfaces\ResponseInterface;
 
@@ -31,5 +32,22 @@ class ScoresController
             'data' => $formattedScores
         ];
         return $response->withJson($responseBody);
+    }
+
+    public function store(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $gameId = $args['gameId'];
+
+        try {
+            $responseBody = [
+                'message' => 'Successfully retrieved from db.',
+                'status' => StatusCode::HTTP_OK,
+                'data' => $gameId
+            ];
+
+            return $response->withJson($responseBody);
+        } catch (Exception $e) {
+            return $response->withStatus(StatusCode::HTTP_BAD_REQUEST);
+        }
     }
 }

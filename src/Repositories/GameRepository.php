@@ -51,6 +51,6 @@ class GameRepository {
     {
         $query = $this->db->prepare("
             INSERT INTO `games` (`name`, `buy_in`) VALUES (:name, :buy_in)
-        ")
+        ");
     }
 }
