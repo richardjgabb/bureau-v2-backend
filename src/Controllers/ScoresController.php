@@ -37,10 +37,30 @@ class ScoresController
     public function store(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $gameId = $args['gameId'];
+        //TODO: Implement storing a new round
 
         try {
             $responseBody = [
-                'message' => 'Successfully retrieved from db.',
+                'message' => 'Successfully stored in the db.',
+                'status' => StatusCode::HTTP_CREATED,
+                'data' => $gameId
+            ];
+
+            return $response->withJson($responseBody);
+        } catch (Exception $e) {
+            return $response->withStatus(StatusCode::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function delete(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $gameId = $args['gameId'];
+        $round = $args['round'];
+        //TODO: Implement deleting a round
+
+        try {
+            $responseBody = [
+                'message' => 'Successfully deleted from db.',
                 'status' => StatusCode::HTTP_OK,
                 'data' => $gameId
             ];

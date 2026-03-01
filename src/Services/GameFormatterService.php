@@ -18,6 +18,7 @@ class GameFormatterService
         return new GameObject(
             $game->id,
             $game->name,
+            $game->buy_in,
             $this->createPlayersArray($players, $playerStats, $scores),
             $this->createGamePotsArray($pots)
         );
@@ -55,7 +56,8 @@ class GameFormatterService
             if ($scoreEntry->player_id === $playerId) {
                 $scoreObject = new ScoreObject(
                     $scoreEntry->round,
-                    $scoreEntry->score
+                    $scoreEntry->score,
+                    $scoreEntry->frozen,
                 );
                 $scoresArray[] = $scoreObject;
             }

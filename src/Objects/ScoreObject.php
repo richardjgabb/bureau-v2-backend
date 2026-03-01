@@ -10,18 +10,21 @@ class ScoreObject implements JsonSerializable
 {
     private int $round;
     private int $score;
+    private bool $frozen;
 
-    public function __construct(int $round, int $score)
+    public function __construct(int $round, int $score, bool $frozen)
     {
         $this->round = $round;
         $this->score = $score;
+        $this->frozen = $frozen;
     }
 
     public function jsonSerialize(): mixed
     {
         return [
             'round' => $this->round,
-            'score' => $this->score
+            'score' => $this->score,
+            'frozen' => $this->frozen,
         ];
     }
 

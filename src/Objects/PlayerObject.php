@@ -12,7 +12,7 @@ class PlayerObject implements JsonSerializable
     private string $name;
     private ?array $scores;
     private ?array $stats;
-    private string $current_score;
+    private int $current_score;
 
     public function __construct(int $id, string $name, ?array $scores = null, ?array $stats = null)
     {
@@ -34,7 +34,7 @@ class PlayerObject implements JsonSerializable
         ];
     }
 
-    private function getCurrentScore(): ?string
+    private function getCurrentScore(): ?int
     {
         $current_score = 0;
         if ($this->scores === null) {
@@ -43,6 +43,7 @@ class PlayerObject implements JsonSerializable
         foreach ($this->scores ?? [] as $score) {
             $current_score += $score->getScore();
         }
-        return '£' . number_format($current_score/100, 2);
+        
+        return $current_score;
     }
 }

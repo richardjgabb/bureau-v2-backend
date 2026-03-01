@@ -32,6 +32,7 @@ return function (App $app) {
         $app->group('/scores', function (RouteCollectorProxy $app) {
             $app->get('/{gameId}', [ScoresController::class, 'show']);
             $app->post('/{gameId}', [ScoresController::class, 'store']);
+            $app->delete('/{gameId}/round/{roundId}', [ScoresController::class, 'delete']);
         });
 
         $app->get('/stats', [StatsController::class, 'index']);
