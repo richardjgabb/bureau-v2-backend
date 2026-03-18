@@ -44,7 +44,7 @@ class GameFormatterService
                 $this->createPlayerScoresArray($scores, $playerModel->id),
                 $this->createPlayerStatsArray($playerStats, $playerModel->id)
             );
-            $playersArray[] = $playerObject;
+            $playersArray[$playerModel->id] = $playerObject;
         }
         return $playersArray;
     }

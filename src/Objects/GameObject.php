@@ -11,6 +11,7 @@ class GameObject implements JsonSerializable
     private int $id;
     private string $name;
     private int $buyIn;
+    private int $round;
     private ?array $players;
     private ?array $pots;
 
@@ -21,6 +22,7 @@ class GameObject implements JsonSerializable
         $this->buyIn = $buyIn;
         $this->players = $players;
         $this->pots = $pots;
+        $this->round = count($pots) + 1;
     }
 
     public function jsonSerialize(): array
@@ -29,6 +31,7 @@ class GameObject implements JsonSerializable
             'id' => $this->id,
             'name' => $this->name,
             'buyIn' => $this->buyIn,
+            'round' => $this->round,
             'players' => $this->players,
             'pots' => $this->pots,
         ];

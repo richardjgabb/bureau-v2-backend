@@ -54,15 +54,15 @@ class ScoresController
 
     public function delete(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-        $gameId = $args['gameId'];
-        $round = $args['round'];
-        //TODO: Implement deleting a round
+        $gameId = (int) $args['gameId'];
+        $round = (int) $args['round'];
 
         try {
+            $this->repository->deleteRound($gameId, $round);
+
             $responseBody = [
-                'message' => 'Successfully deleted from db.',
+                'message' => 'Round successfully deleted from db.',
                 'status' => StatusCode::HTTP_OK,
-                'data' => $gameId
             ];
 
             return $response->withJson($responseBody);
