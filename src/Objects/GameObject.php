@@ -8,7 +8,7 @@ use JsonSerializable;
 
 class GameObject implements JsonSerializable
 {
-    private int $id;
+    public readonly int $id;
     private string $name;
     private int $buyIn;
     private int $round;

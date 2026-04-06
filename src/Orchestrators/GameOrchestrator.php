@@ -60,6 +60,7 @@ class GameOrchestrator
 
     public function createNewGame(array $data): GameObject
     {
-        return $this->gameRepository->createNewGame($data);
+        $game = $this->gameRepository->createNewGame($data['gameName'], (int) $data['buyIn'], $data['players']);
+        return $game;
     }
 }

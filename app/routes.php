@@ -26,6 +26,7 @@ return function (App $app) {
 
         $app->group('/games', function (RouteCollectorProxy $app) {
             $app->get('', [GameController::class, 'index']);
+            $app->post('', [GameController::class, 'store']);
             $app->get('/{gameId}', [GameController::class, 'show']);
         });
 

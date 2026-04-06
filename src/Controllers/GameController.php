@@ -49,6 +49,6 @@ class GameController
             'status' => StatusCode::HTTP_CREATED,
             'data' => $newGame
         ];
-        return $response->withJson($responseBody, StatusCode::HTTP_CREATED);
+        return $response->withJson($responseBody);
     }
 }
