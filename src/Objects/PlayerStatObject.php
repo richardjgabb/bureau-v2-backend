@@ -47,7 +47,7 @@ class PlayerStatObject implements JsonSerializable
             'Compulsory Bues' => $this->compuls_bues,
             'Wins with Deal' => $this->wins_with_deal,
             'Bues with Deal' => $this->bues_with_deal,
-            'Hands played' => $this->hands_played,
+            'Hands played' => $this->hands_played ?? 0,
             'Largest Pot Won' => '£' . number_format($this->biggest_pot / 100, 2),
         ];
     }

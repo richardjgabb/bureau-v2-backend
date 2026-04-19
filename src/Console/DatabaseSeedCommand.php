@@ -108,20 +108,20 @@ class DatabaseSeedCommand extends Command
 
     private function seedScores(): void
     {
-        $scoreStmt = $this->db->prepare("INSERT INTO `scores` (`id`, `player_id`, `game_id`, `round`, `score`, `frozen`)
+        $scoreStmt = $this->db->prepare("INSERT INTO `scores` (`id`, `player_id`, `game_id`, `round`, `score`)
             VALUES
-                (1, 5, 2, 1, -20, 0),
-                (2, 6, 2, 1, -20, 0),
-                (3, 7, 2, 1, -20, 0),
-                (4, 8, 2, 1, 60, 0),
-                (5, 1, 3, 1, 60, 0),
-                (6, 2, 3, 1, -20, 0),
-                (7, 3, 3, 1, -20, 0),
-                (8, 4, 3, 1, -20, 0),
-                (9, 1, 3, 2, 120, 0),
-                (10, 2, 3, 2, -40, 0),
-                (11, 3, 3, 2, -40, 0),
-                (12, 4, 3, 2, -40, 0);
+                (1, 5, 2, 1, -20),
+                (2, 6, 2, 1, -20),
+                (3, 7, 2, 1, -20),
+                (4, 8, 2, 1, 60),
+                (5, 1, 3, 1, 60),
+                (6, 2, 3, 1, -20),
+                (7, 3, 3, 1, -20),
+                (8, 4, 3, 1, -20),
+                (9, 1, 3, 2, 120),
+                (10, 2, 3, 2, -40),
+                (11, 3, 3, 2, -40),
+                (12, 4, 3, 2, -40);
             ");
         $scoreStmt->execute();
     }

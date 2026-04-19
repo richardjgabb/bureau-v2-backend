@@ -44,6 +44,7 @@ class PlayerStatsRepository {
                             player_id,
                             COUNT(DISTINCT `round`) AS hands_played
                         FROM scores
+                        WHERE `game_id` = :game_id
                         GROUP BY player_id
                     ),
                     pot_max AS (
@@ -51,6 +52,7 @@ class PlayerStatsRepository {
                             pot_winner AS player_id,
                             MAX(`pot`) AS biggest_pot
                         FROM pots
+                        WHERE `game_id` = :game_id
                         GROUP BY pot_winner
                     )
                     SELECT

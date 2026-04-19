@@ -11,7 +11,6 @@ class ScoreModel
     public string $game_id;
     public int $round;
     public int $score;
-    public bool $frozen;
 
     public function toArray()
     {
@@ -21,7 +20,6 @@ class ScoreModel
             'game_id' => $this->game_id,
             'round' => $this->round,
             'score' => $this->score,
-            'frozen' => $this->frozen,
         ];
     }
 }
