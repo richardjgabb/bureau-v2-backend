@@ -26,7 +26,7 @@ class PlayerObject implements JsonSerializable
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'current_score' => $this->scores[array_key_last($this->scores)]->score,
+            'current_score' => $this->scores[array_key_last($this->scores)]->score ?? 0,
             'scores' => $this->scores,
             'stats' => $this->stats,
         ];
