@@ -5,21 +5,26 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Classes\StatusCode;
+use App\Events\RoundCompletedEvent;
+use App\Objects\StoreRoundObject;
 use App\Repositories\ScoreRepository;
 use App\Services\ScoreFormatterService;
 use Exception;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Http\Interfaces\ResponseInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class ScoresController
 {
     private ScoreRepository $repository;
     private ScoreFormatterService $formatter;
+    private EventDispatcher $eventDispatcher;
 
-    public function __construct(ScoreRepository $repository, ScoreFormatterService $formatter)
+    public function __construct(ScoreRepository $repository, ScoreFormatterService $formatter, EventDispatcher $eventDispatcher)
     {
         $this->repository = $repository;
         $this->formatter = $formatter;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
@@ -36,10 +41,18 @@ class ScoresController
 
     public function store(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-        $gameId = $args['gameId'];
-        //TODO: Implement storing a new round
+        $gameId = (int) $args['gameId'];
 
         try {
+            $data = new StoreRoundObject($request->getParsedBody());
+
+            $this->eventDispatcher->dispatch(
+                new RoundCompletedEvent(
+                    $data
+                ),
+                RoundCompletedEvent::NAME
+            );
+
             $responseBody = [
                 'message' => 'Successfully stored in the db.',
                 'status' => StatusCode::HTTP_CREATED,
@@ -47,7 +60,7 @@ class ScoresController
             ];
 
             return $response->withJson($responseBody);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return $response->withStatus(StatusCode::HTTP_BAD_REQUEST);
         }
     }

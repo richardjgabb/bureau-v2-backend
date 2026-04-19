@@ -87,20 +87,9 @@ class GameRepository {
         }
     }
 
-    private function initiateGameStats(int $gameId): bool
-    {
-        $query = $this->db->prepare("
-            INSERT INTO `game_stats` (`game_id`) VALUES (:game_id)
-        ");
-
-        $query->bindParam(":game_id", $gameId);
-        return $query->execute();
-    }
-
     public function createNewGame(string $name, int $buyIn, array $players): GameObject
     {
         $gameId = $this->addNewGame($name, $buyIn);
-        $this->initiateGameStats($gameId);
         $this->linkPlayersToGame($gameId, $players);
         $this->initiatePlayerStats($gameId, $players);
 

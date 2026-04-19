@@ -23,7 +23,7 @@ class PotObject implements JsonSerializable
     {
         return [
             'round' => $this->round,
-            'pot' => '£' . number_format($this->pot / 100, 2),
+            'pot' => $this->pot,
             'winner' => $this->pot_winner,
         ];
     }

@@ -80,7 +80,14 @@ class PlayerStatsRepository {
                            SUM(player_stats.`wins_with_deal`) AS 'Pots Won with Deal',
                            SUM(player_stats.`bues_with_deal`) AS 'Times Bued with Deal',
                            (SELECT COUNT(DISTINCT scores.`id`) FROM scores WHERE player_id = :player_id) AS `Hands Played`,
-                           (SELECT CONCAT('£', FORMAT(SUM(scores.`score`)/100, 2)) FROM scores WHERE player_id = :player_id) AS `Total Score`,
+                           (SELECT CONCAT('£', FORMAT(SUM(max_scores.top_score) / 100, 2))
+                              FROM (
+                                    SELECT MAX(score) AS top_score
+                                    FROM scores
+                                    WHERE player_id = :player_id
+                                    GROUP BY game_id
+                            ) AS max_scores
+                        ) AS `Total Score`,
                            COUNT(DISTINCT player_stats.`game_id`) AS `Games Played`,
                            (SELECT players.`name` FROM players WHERE players.`id` = :player_id) AS `Player Name`
                       FROM `player_stats`
