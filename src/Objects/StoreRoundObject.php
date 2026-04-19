@@ -7,8 +7,8 @@ namespace App\Objects;
 class StoreRoundObject
 {
     public readonly int $gameId;
-    public readonly int $winnerId;
-    public readonly int $dealerId;
+    public readonly ?int $winnerId;
+    public readonly ?int $dealerId;
     public readonly int $buyIn;
     public readonly int $round;
     public readonly ?array $buedIds;
@@ -20,8 +20,8 @@ class StoreRoundObject
     )
     {
         $this->gameId = $roundData['id'];
-        $this->winnerId = $roundData['potWinnerId'] ?? 0;
-        $this->dealerId = $roundData['dealerId'] ?? 0;
+        $this->winnerId = $roundData['potWinnerId'] ?? null;
+        $this->dealerId = $roundData['dealerId'] ?? null;
         $this->buyIn = $roundData['buyIn'];
         $this->round = $roundData['round'];
         $this->buedIds = $roundData['buedIds'] ?? null;

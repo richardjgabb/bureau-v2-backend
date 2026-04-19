@@ -60,8 +60,8 @@ class ScoresController
             ];
 
             return $response->withJson($responseBody);
-        } catch (Exception) {
-            return $response->withStatus(StatusCode::HTTP_BAD_REQUEST);
+        } catch (Exception $e) {
+            return $response->withStatus(StatusCode::HTTP_BAD_REQUEST)->withJson(['message' => $e->getMessage()]);
         }
     }
 

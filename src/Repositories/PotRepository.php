@@ -31,48 +31,35 @@ class PotRepository {
         return $query->fetchAll();
     }
 
-    public function handlePotWinner(int $gameId, int $round, int $winnerId, int $potSize): bool
+    public function handlePotWinner(int $gameId, int $round, ?int $winnerId, int $potSize, bool $isCompuls, ?int $dealerId, int $amountOfBues): bool
     {
         $query = $this->db->prepare("
-            INSERT INTO `pots` (`game_id`, `round`, `pot`, `pot_winner`)
-               VALUES (:game_id, :round, :pot, :winner_id)
-             WHERE `game_id` = :game_id
-               AND `round` = :round
+            INSERT INTO `pots` (`game_id`, `round`, `pot`, `pot_winner`, `is_compuls`, `amount_of_bues`, `dealer_id`)
+               VALUES (:game_id, :round, :pot, :winner_id, :is_compuls, :amount_of_bues, :dealer_id);
         ");
 
         $query->bindParam(":game_id", $gameId);
         $query->bindParam(":round", $round);
         $query->bindParam(":pot", $potSize);
         $query->bindParam(":winner_id", $winnerId);
+        $query->bindParam(":is_compuls", $isCompuls);
+        $query->bindParam(":amount_of_bues", $amountOfBues);
+        $query->bindParam(":dealer_id", $dealerId);
         return $query->execute();
     }
 
-    public function getCurrentPotSize(int $gameId, int $round): int
+    public function handleSplit(int $gameId, int $round, int $newPot, bool $isCompuls, int $amountOfBues): bool
     {
         $query = $this->db->prepare("
-            SELECT `pot`
-              FROM `pots`
-                 WHERE `game_id` = :game_id
-                   AND `round` = :round
-        ");
-
-        $query->bindParam(":game_id", $gameId);
-        $query->bindParam(":round", $round);
-        $query->execute();
-
-        return $query->fetchColumn();
-    }
-
-    public function handleSplit(int $gameId, int $round, int $newPot): bool
-    {
-        $query = $this->db->prepare("
-            INSERT INTO `pots` (`game_id`, `round`, `pot`, `is_compuls`)
-                 VALUES (:game_id, :round, :new_pot, 0);
+            INSERT INTO `pots` (`game_id`, `round`, `pot`, `is_compuls`, `amount_of_bues`)
+                 VALUES (:game_id, :round, :new_pot, :is_compuls, :amount_of_bues);
         ");
 
         $query->bindParam(":game_id", $gameId);
         $query->bindParam(":round", $round);
         $query->bindParam(":new_pot", $newPot);
+        $query->bindParam(":is_compuls", $isCompuls);
+        $query->bindParam(":amount_of_bues", $amountOfBues);
 
         return $query->execute();
     }

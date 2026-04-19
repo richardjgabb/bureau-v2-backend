@@ -13,6 +13,7 @@ class PotModel
     public bool $is_compuls;
     public ?int $pot_winner;
     public int $amount_of_bues;
+    public ?int $dealer_id;
 
     public function toArray()
     {
@@ -23,7 +24,8 @@ class PotModel
             'pot' => $this->pot,
             'is_compuls' => $this->is_compuls,
             'pot_winner' => $this->pot_winner,
-            'amount_of_bues' => $this->amount_of_bues
+            'amount_of_bues' => $this->amount_of_bues,
+            'dealer_id' => $this->dealer_id
         ];
     }
 }

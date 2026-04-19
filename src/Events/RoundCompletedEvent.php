@@ -12,8 +12,8 @@ class RoundCompletedEvent extends Event {
 
     public readonly int $gameId;
     public readonly int $round;
-    public readonly int $winnerId;
-    public readonly int $dealerId;
+    public readonly ?int $winnerId;
+    public readonly ?int $dealerId;
     public readonly int $buyIn;
     public readonly array $buedIds;
     public readonly array $livePlayers;
@@ -33,14 +33,14 @@ class RoundCompletedEvent extends Event {
     }
 
     public function isSplit(): bool {
-        return $this->winnerId === 0;
+        return $this->winnerId === null;
     }
 
     public function hasNoBues(): bool {
         return $this->amountOfBues() === 0;
     }
 
-    private function amountOfBues(): int {
+    public function amountOfBues(): int {
         return count($this->buedIds);
     }
 

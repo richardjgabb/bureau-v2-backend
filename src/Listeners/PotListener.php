@@ -21,14 +21,21 @@ class PotListener {
                 $event->gameId,
                 $event->round,
                 $event->winnerId,
-                $event->currentPotSize
+                $event->currentPotSize,
+                $event->isCompulsRound(),
+                $event->dealerId,
+                $event->amountOfBues()
             );
         } elseif ($event->isSplit()) {
-            $potSize = $this->potRepository->getCurrentPotSize($event->gameId, $event->round - 1);
-            $newPot = $event->calculateNewPotSize($potSize);
-            $this->potRepository->handleSplit($event->gameId, $event->round, $newPot);
+            $this->potRepository->handleSplit(
+                $event->gameId,
+                $event->round,
+                $event->currentPotSize,
+                $event->isCompulsRound(),
+                $event->amountOfBues()
+            );
         } else {
-
+            throw new \InvalidArgumentException('Invalid event');
         }
     }
 }
