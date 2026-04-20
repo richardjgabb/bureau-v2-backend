@@ -28,7 +28,7 @@ $dependencies($containerBuilder);
 $container = $containerBuilder->build();
 
 // 3. Setup Application
-$application = new Application('Bureau CLI', '1.0.0');
+$application = new Application('Bureau', '1.0.0');
 
 // Alternative to ->add(): use addCommands which takes an array
 $command = $container->get(DatabaseSeedCommand::class);

@@ -35,7 +35,7 @@ class PotListener {
                 $event->amountOfBues()
             );
         } else {
-            throw new \InvalidArgumentException('Invalid event');
+            //TODO handle this case
         }
     }
 }

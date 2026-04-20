@@ -66,4 +66,29 @@ class ScoreRepository {
             throw new Exception("Failed to delete round");
         }
     }
+
+    private function insertNewScore(int $gameId, int $round, int $playerId, int $score): bool
+    {
+        $query = $this->db->prepare("
+            INSERT INTO `scores` (`game_id`, `round`, `player_id`, `score`) VALUES (:game_id, :round, :player_id, :score)
+        ");
+
+        $query->bindParam(":game_id", $gameId);
+        $query->bindParam(":round", $round);
+        $query->bindParam(":player_id", $playerId);
+        $query->bindParam(":score", $score);
+
+        return $query->execute();
+    }
+
+    public function addPlayersScores(int $gameId, int $round, array $scores): bool
+    {
+        foreach ($scores as $playerId => $score) {
+            if (!$this->insertNewScore($gameId, $round, $playerId, $score)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

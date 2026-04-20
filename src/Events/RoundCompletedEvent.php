@@ -17,6 +17,7 @@ class RoundCompletedEvent extends Event {
     public readonly int $buyIn;
     public readonly array $buedIds;
     public readonly array $livePlayers;
+    public readonly array $playerScores;
     public readonly int $currentPotSize;
 
     public function __construct(
@@ -29,6 +30,7 @@ class RoundCompletedEvent extends Event {
         $this->buyIn = $roundData->buyIn;
         $this->buedIds = $roundData->buedIds ?? [];
         $this->livePlayers = $roundData->livePlayers ?? [];
+        $this->playerScores = $roundData->playerScores;
         $this->currentPotSize = $roundData->currentPotSize;
     }
 

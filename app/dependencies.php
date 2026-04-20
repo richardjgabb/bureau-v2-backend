@@ -6,7 +6,7 @@ use App\Factories\LoggerFactory;
 use App\Factories\PDOFactory;
 use App\Factories\RendererFactory;
 use App\Listeners\PotListener;
-use App\Listeners\StatsListener;
+use App\Listeners\ScoreListener;
 use DI\ContainerBuilder;
 use Psr\Log\LoggerInterface;
 use Slim\Views\PhpRenderer;
@@ -25,6 +25,11 @@ return function (ContainerBuilder $containerBuilder) {
             $dispatcher->addListener(
                 RoundCompletedEvent::NAME,
                 [$c->get(PotListener::class), 'onRoundFinished']
+            );
+
+            $dispatcher->addListener(
+                RoundCompletedEvent::NAME,
+                [$c->get(ScoreListener::class), 'onRoundFinished']
             );
 
             return $dispatcher;

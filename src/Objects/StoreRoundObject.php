@@ -14,6 +14,7 @@ class StoreRoundObject
     public readonly ?array $buedIds;
     public readonly array $livePlayers;
     public readonly int $currentPotSize;
+    public readonly array $playerScores;
 
     public function __construct(
         array $roundData
@@ -29,5 +30,6 @@ class StoreRoundObject
             array_filter($roundData['players'], fn($player) => $player['isLive'] ?? true)
         );
         $this->currentPotSize = $roundData['currentPotSize'];
+        $this->playerScores = array_column($roundData['players'], 'current_score', 'id');
     }
 }
