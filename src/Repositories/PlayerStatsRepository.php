@@ -100,4 +100,25 @@ class PlayerStatsRepository {
         $query->execute();
         return $query->fetch();
     }
+
+    private function initiatePlayerStats(int $gameId, int $playerId)
+    {
+        $query = $this->db->prepare("
+            INSERT INTO `player_stats` (`game_id`, `player_id`) VALUES (:game_id, :player_id)
+        ");
+
+        $query->bindParam(":game_id", $gameId);
+        $query->bindParam(":player_id", $playerId);
+
+        return $query->execute();
+    }
+
+    public function initiateStatsForAllPlayers(array $players, int $gameId): bool
+    {
+        foreach ($players as $player) {
+            $this->initiatePlayerStats($gameId, $player['id']);
+        }
+
+        return true;
+    }
 }

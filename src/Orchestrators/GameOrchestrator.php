@@ -60,7 +60,25 @@ class GameOrchestrator
 
     public function createNewGame(array $data): GameObject
     {
-        $game = $this->gameRepository->createNewGame($data['gameName'], (int) $data['buyIn'], $data['players']);
-        return $game;
+        $newPlayers = array_filter($data['players'], function ($player) {
+            return $player['id'] === null;
+        });
+        $existingPlayers = array_filter($data['players'], function ($player) {
+            return $player['id'] !== null;
+        });
+
+        if (count($newPlayers) > 0) {
+            $createdPlayers = $this->playerRepository->createNewPlayers($newPlayers);
+            $existingPlayers = array_merge($existingPlayers, $createdPlayers);
+        }
+
+        $gameId = $this->gameRepository->createNewGame($data['gameName'], (int) $data['buyIn']);
+
+        file_put_contents('debug.txt', print_r($existingPlayers, true));
+
+        $this->playerRepository->linkPlayersToGame($existingPlayers, $gameId);
+        $this->playerStatsRepository->initiateStatsForAllPlayers( $existingPlayers, $gameId);
+
+        return $this->getGameData((string) $gameId);
     }
 }

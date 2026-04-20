@@ -48,4 +48,52 @@ class PlayerRepository {
         $query->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, PlayerModel::class);
         return $query->fetchAll();
     }
+
+    private function createNewPlayer(string $name): int
+    {
+        $query = $this->db->prepare("
+            INSERT INTO `players` (`name`) VALUES (:name)
+        ");
+
+        $query->bindParam(":name", $name);
+        $query->execute();
+
+        return (int) $this->db->lastInsertId();
+    }
+
+    private function linkPlayerToGame(int $playerId, int $gameId): bool
+    {
+        $query = $this->db->prepare("
+            INSERT INTO `player_game` (`player_id`, `game_id`) VALUES (:player_id, :game_id)
+        ");
+
+        $query->bindParam(":player_id", $playerId);
+        $query->bindParam(":game_id", $gameId);
+
+        return $query->execute();
+    }
+
+    public function createNewPlayers(array $playersToCreate): array {
+        $playersCreated = [];
+
+        foreach ($playersToCreate as $player) {
+            $newPlayerId = $this->createNewPlayer($player['name']);
+            $playersCreated[] = [
+                'id' => $newPlayerId,
+                'name' => $player['name'],
+                'score' => $player['score']
+            ];
+        }
+
+        return $playersCreated;
+    }
+
+    public function linkPlayersToGame(array $players, int $gameId): bool
+    {
+        foreach ($players as $player) {
+            $this->linkPlayerToGame($player['id'], $gameId);
+        }
+
+        return true;
+    }
 }

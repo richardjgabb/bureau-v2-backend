@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Classes\StatusCode;
 use App\Orchestrators\GameOrchestrator;
+use Exception;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Http\Interfaces\ResponseInterface;
 
@@ -43,12 +44,20 @@ class GameController
     public function store(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $data = $request->getParsedBody();
-        $newGame = $this->orchestrator->createNewGame($data);
-        $responseBody = [
-            'message' => 'Game successfully created.',
-            'status' => StatusCode::HTTP_CREATED,
-            'data' => $newGame
-        ];
+
+        try {
+            $newGame = $this->orchestrator->createNewGame($data);
+            $responseBody = [
+                'message' => 'Game successfully created.',
+                'status' => StatusCode::HTTP_CREATED,
+                'data' => $newGame
+            ];
+        } catch (Exception $e) {
+            $responseBody = [
+                'message' => $e->getMessage(),
+                'status' => StatusCode::HTTP_BAD_REQUEST,
+            ];
+        }
         return $response->withJson($responseBody);
     }
 }
