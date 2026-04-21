@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\PlayerGameStatsModel;
+use Exception;
 use PDO;
 
 class PlayerStatsRepository {
@@ -101,7 +102,7 @@ class PlayerStatsRepository {
         return $query->fetch();
     }
 
-    private function initiatePlayerStats(int $gameId, int $playerId)
+    private function initiatePlayerStats(int $gameId, int $playerId): bool
     {
         $query = $this->db->prepare("
             INSERT INTO `player_stats` (`game_id`, `player_id`) VALUES (:game_id, :player_id)
@@ -120,5 +121,95 @@ class PlayerStatsRepository {
         }
 
         return true;
+    }
+
+    public function handleRoundStats(int $dealerId, int $potWinnerId, int $gameId, bool $isCompuls, array $bues): bool
+    {
+        $this->db->beginTransaction();
+        try{
+            $this->incrementHandsDealt($dealerId, $gameId);
+            if ($potWinnerId) {
+                $winnerIsDealer = $potWinnerId === $dealerId;
+                $this->updateRoundWinnerStats($potWinnerId, $gameId, $isCompuls, $winnerIsDealer);
+            }
+            if (count($bues) > 0) {
+                $this->updateRoundBuedStats($bues, $gameId, $isCompuls);
+                if (in_array($dealerId, $bues)) {
+                    $this->updateBuedWithDealStat($dealerId, $gameId);
+                }
+            }
+        } catch (Exception $e) {
+                $this->db->rollBack();
+                throw $e;
+        }
+        return $this->db->commit();
+    }
+
+    private function incrementHandsDealt(int $dealerId, int $gameId): bool
+    {
+        $query = $this->db->prepare("
+            UPDATE `player_stats`
+               SET `hands_dealt` = `hands_dealt` + 1
+             WHERE `player_id` = :id
+               AND `game_id` = :game_id
+        ");
+
+        $query->bindParam(":id", $dealerId);
+        $query->bindParam(":game_id", $gameId);
+        return $query->execute();
+    }
+
+    private function updateRoundWinnerStats(int $potWinnerId, int $gameId, bool $isCompuls, bool $isDealer): bool
+    {
+        $query = $this->db->prepare("
+            UPDATE `player_stats`
+               SET `wins` = `wins` + 1" .
+       ($isCompuls ? ", `compuls_wins` = `compuls_wins` + 1" : "") .
+        ($isDealer ? ", `wins_with_deal` = `wins_with_deal` + 1" : "") .
+           " WHERE `player_id` = :winner_id
+               AND `game_id` = :game_id
+        ");
+
+        $query->bindParam(":winner_id", $potWinnerId);
+        $query->bindParam(":game_id", $gameId);
+        return $query->execute();
+    }
+
+    private function updateRoundBuedStats(array $bues, int $gameId, bool $isCompuls): bool
+{
+    if (empty($bues)) {
+        return true;
+    }
+
+    // Protecting against SQL injection
+    $placeholders = implode(',', array_fill(0, count($bues), '?'));
+
+    $sql = "
+        UPDATE `player_stats`
+           SET `bues` = `bues` + 1" .
+   ($isCompuls ? ", `compuls_bues` = `compuls_bues` + 1" : "") .
+       " WHERE `player_id` IN ($placeholders)
+           AND `game_id` = ?
+    ";
+
+    $query = $this->db->prepare($sql);
+    $params = array_values($bues);
+    $params[] = $gameId;
+
+    return $query->execute($params);
+}
+
+    private function updateBuedWithDealStat(int $playerId, int $gameId): bool
+    {
+        $query = $this->db->prepare("
+            UPDATE `player_stats`
+               SET `bues_with_deal` = `bues_with_deal` + 1
+             WHERE `player_id` = :player_id
+               AND `game_id` = :game_id
+        ");
+
+        $query->bindParam(":player_id", $playerId);
+        $query->bindParam(":game_id", $gameId);
+        return $query->execute();
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use Exception;
 use PDO;
 
 class StatsRepository {

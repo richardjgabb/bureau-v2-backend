@@ -16,26 +16,14 @@ class PotListener {
         $this->potRepository = $potRepository;
     }
     public function onRoundFinished(RoundCompletedEvent $event) {
-        if (!$event->isSplit() && $event->hasNoBues()) {
-            $this->potRepository->handlePotWinner(
-                $event->gameId,
-                $event->round,
-                $event->winnerId,
-                $event->currentPotSize,
-                $event->isCompulsRound(),
-                $event->dealerId,
-                $event->amountOfBues()
-            );
-        } elseif ($event->isSplit()) {
-            $this->potRepository->handleSplit(
-                $event->gameId,
-                $event->round,
-                $event->currentPotSize,
-                $event->isCompulsRound(),
-                $event->amountOfBues()
-            );
-        } else {
-            //TODO handle this case
-        }
+        $this->potRepository->addNewPot(
+            $event->gameId,
+            $event->round,
+            $event->winnerId,
+            $event->currentPotSize,
+            $event->isCompulsRound(),
+            $event->dealerId,
+            $event->amountOfBues()
+        );
     }
 }

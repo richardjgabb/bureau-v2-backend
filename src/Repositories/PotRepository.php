@@ -31,7 +31,7 @@ class PotRepository {
         return $query->fetchAll();
     }
 
-    public function handlePotWinner(int $gameId, int $round, ?int $winnerId, int $potSize, bool $isCompuls, ?int $dealerId, int $amountOfBues): bool
+    public function addNewPot(int $gameId, int $round, ?int $winnerId, int $potSize, bool $isCompuls, ?int $dealerId, int $amountOfBues): bool
     {
         $query = $this->db->prepare("
             INSERT INTO `pots` (`game_id`, `round`, `pot`, `pot_winner`, `is_compuls`, `amount_of_bues`, `dealer_id`)
@@ -45,22 +45,6 @@ class PotRepository {
         $query->bindParam(":is_compuls", $isCompuls);
         $query->bindParam(":amount_of_bues", $amountOfBues);
         $query->bindParam(":dealer_id", $dealerId);
-        return $query->execute();
-    }
-
-    public function handleSplit(int $gameId, int $round, int $newPot, bool $isCompuls, int $amountOfBues): bool
-    {
-        $query = $this->db->prepare("
-            INSERT INTO `pots` (`game_id`, `round`, `pot`, `is_compuls`, `amount_of_bues`)
-                 VALUES (:game_id, :round, :new_pot, :is_compuls, :amount_of_bues);
-        ");
-
-        $query->bindParam(":game_id", $gameId);
-        $query->bindParam(":round", $round);
-        $query->bindParam(":new_pot", $newPot);
-        $query->bindParam(":is_compuls", $isCompuls);
-        $query->bindParam(":amount_of_bues", $amountOfBues);
-
         return $query->execute();
     }
 }

@@ -16,8 +16,7 @@ class RoundCompletedEvent extends Event {
     public readonly ?int $dealerId;
     public readonly int $buyIn;
     public readonly array $buedIds;
-    public readonly array $livePlayers;
-    public readonly array $playerScores;
+    public readonly array $players;
     public readonly int $currentPotSize;
 
     public function __construct(
@@ -25,13 +24,12 @@ class RoundCompletedEvent extends Event {
     ) {
         $this->gameId = $roundData->gameId;
         $this->round = $roundData->round;
-        $this->winnerId = $roundData->winnerId;
-        $this->dealerId = $roundData->dealerId;
+        $this->winnerId = $roundData->winnerId ?? null;
+        $this->dealerId = $roundData->dealerId ?? null;
         $this->buyIn = $roundData->buyIn;
         $this->buedIds = $roundData->buedIds ?? [];
-        $this->livePlayers = $roundData->livePlayers ?? [];
-        $this->playerScores = $roundData->playerScores;
         $this->currentPotSize = $roundData->currentPotSize;
+        $this->players = $roundData->players ?? [];
     }
 
     public function isSplit(): bool {
@@ -47,7 +45,17 @@ class RoundCompletedEvent extends Event {
     }
 
     private function amountOfPlayers(): int {
-        return count($this->livePlayers);
+        return count($this->players);
+    }
+
+    private function livePlayers(): array {
+        return array_values(
+            array_filter($this->players, fn($player) => $player['isLive'] ?? true)
+        );
+    }
+
+    public function playerScores(): array {
+        return array_column($this->livePlayers(), 'current_score', 'id');
     }
 
     public function compulsPotSize(): int {

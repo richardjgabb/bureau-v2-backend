@@ -19,7 +19,7 @@ class ScoreListener {
         $this->scoreRepository->addPlayersScores(
             $event->gameId,
             $event->round,
-            $event->playerScores
+            $event->playerScores()
         );
     }
 }
