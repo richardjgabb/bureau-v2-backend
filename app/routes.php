@@ -7,6 +7,7 @@ use App\Controllers\LoginController;
 use App\Controllers\PlayerController;
 use App\Controllers\PlayerStatsController;
 use App\Controllers\RegisterUserController;
+use App\Controllers\ScoreboardController;
 use App\Controllers\ScoresController;
 use App\Controllers\StatsController;
 use Slim\App;
@@ -29,6 +30,7 @@ return function (App $app) {
             $app->get('', [GameController::class, 'index']);
             $app->post('', [GameController::class, 'store']);
             $app->get('/{gameId}', [GameController::class, 'show']);
+            $app->get('/{gameId}/scoreboard', ScoreboardController::class);
         });
 
         $app->group('/scores', function (RouteCollectorProxy $app) {

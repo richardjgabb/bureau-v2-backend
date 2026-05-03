@@ -37,10 +37,19 @@ class PlayerRepository {
     public function getAllPlayersForGame($gameId): array
     {
         $query = $this->db->prepare(
-            "SELECT players.*
+            "SELECT players.id,
+                           players.name,
+                           (SELECT scores.`score`
+                              FROM scores
+                             WHERE scores.`player_id` = players.`id`
+                               AND scores.game_id = :game_id
+                             ORDER BY scores.`round` DESC
+                             LIMIT 1) AS current_score
                       FROM `players`
                 INNER JOIN `player_game` ON players.`id` = player_game.`player_id`
+                INNER JOIN `scores` ON players.`id` = scores.`player_id`
                      WHERE player_game.`game_id` = :game_id
+                  GROUP BY players.`id`
         ");
 
         $query->bindParam(":game_id", $gameId);

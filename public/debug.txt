@@ -1,0 +1,17 @@
+Array
+(
+    [0] => Array
+        (
+            [id] => 1
+            [name] => Rich
+            [score] => 200
+        )
+
+    [1] => Array
+        (
+            [id] => 2
+            [name] => Dan
+            [score] => 100
+        )
+
+)

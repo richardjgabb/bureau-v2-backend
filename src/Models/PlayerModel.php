@@ -8,14 +8,14 @@ class PlayerModel
 {
     public int $id;
     public string $name;
-    private ?array $scores;
+    public ?int $current_score;
 
     public function toArray()
     {
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'scores' => $this->scores,
+            'current_score' => $this->current_score ?? 0
         ];
     }
 }

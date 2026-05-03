@@ -91,4 +91,35 @@ class ScoreRepository {
 
         return true;
     }
+
+    public function getScoreboardScores(int $gameId)
+    {
+        $query = $this->db->prepare("
+            SELECT `scores`.`player_id`,
+                   `scores`.`round`,
+                   `scores`.`score`,
+                   `pots`.`pot_winner`,
+                   `pots`.`pot`
+              FROM `scores`
+        LEFT JOIN `pots` ON `scores`.`game_id` = `pots`.`game_id` AND `scores`.`round` = `pots`.`round`
+             WHERE `scores`.`game_id` = :game_id
+          ORDER BY `scores`.`round` ASC, `scores`.`player_id` ASC
+        ");
+
+        $query->bindParam(":game_id", $gameId);
+        $query->execute();
+
+        return $query->fetchAll();
+    }
+
+    public function initiateScoresForAllPlayers(array $players, int $gameId): bool
+    {
+        foreach ($players as $player) {
+            if (!$this->insertNewScore($gameId, 0, $player['id'], $player['score'])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

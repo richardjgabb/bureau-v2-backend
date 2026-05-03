@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\GameModel;
-use App\Objects\GameObject;
 use PDO;
 
 class GameRepository {

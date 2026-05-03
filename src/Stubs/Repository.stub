@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Repositories;
+
+use PDO;
+
+class {{name}}
+{
+    private PDO $db;
+
+    public function __construct(PDO $db)
+    {
+        $this->db = $db;
+    }
+
+    public function get(): array
+    {
+        $query = $this->db->prepare(
+            "SELECT *
+               FROM `test`
+        ");
+
+        $query->execute();
+        return $query->fetchAll();
+    }
+}

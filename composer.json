@@ -22,6 +22,8 @@
     "scripts": {
         "start": "php -S 0.0.0.0:8080 -t public",
         "test": "phpunit",
-        "seed": "php bin/console db:seed"
+        "seed": "php bin/console db:seed",
+        "make:controller": "php bin/console make:controller",
+        "make:repository": "php bin/console make:repository"
     }
 }

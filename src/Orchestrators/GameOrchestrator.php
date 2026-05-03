@@ -45,10 +45,9 @@ class GameOrchestrator
             throw new GameNotFoundException($gameId);
         }
         $players = $this->playerRepository->getAllPlayersForGame($gameId);
-        $scores = $this->scoreRepository->getAllScoresForGame($gameId);
         $playerStats = $this->playerStatsRepository->getAllPlayersStatsForGame($gameId);
         $pots = $this->potRepository->getAllPotsForGame($gameId);
-        $formattedGame = $this->formatter->createGameArray($game, $players, $scores, $playerStats, $pots);
+        $formattedGame = $this->formatter->createGameArray($game, $players, $playerStats, $pots);
 
         return $formattedGame;
     }
@@ -69,15 +68,14 @@ class GameOrchestrator
 
         if (count($newPlayers) > 0) {
             $createdPlayers = $this->playerRepository->createNewPlayers($newPlayers);
-            $existingPlayers = array_merge($existingPlayers, $createdPlayers);
+            $players = array_merge($existingPlayers, $createdPlayers);
         }
 
         $gameId = $this->gameRepository->createNewGame($data['gameName'], (int) $data['buyIn']);
 
-        file_put_contents('debug.txt', print_r($existingPlayers, true));
-
-        $this->playerRepository->linkPlayersToGame($existingPlayers, $gameId);
-        $this->playerStatsRepository->initiateStatsForAllPlayers( $existingPlayers, $gameId);
+        $this->playerRepository->linkPlayersToGame($players ?? $existingPlayers, $gameId);
+        $this->scoreRepository->initiateScoresForAllPlayers($players ?? $existingPlayers, $gameId);
+        $this->playerStatsRepository->initiateStatsForAllPlayers($players ?? $existingPlayers, $gameId);
 
         return $this->getGameData((string) $gameId);
     }
