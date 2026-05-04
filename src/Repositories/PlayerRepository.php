@@ -58,6 +58,21 @@ class PlayerRepository {
         return $query->fetchAll();
     }
 
+    public function getPlayerIdsForGame($gameId): array
+    {
+        $query = $this->db->prepare("
+            SELECT player_game.`player_id`
+              FROM `player_game`
+             WHERE player_game.`game_id` = :game_id
+             ORDER BY player_game.`player_id`
+        ");
+
+        $query->bindParam(":game_id", $gameId);
+        $query->setFetchMode(PDO::FETCH_COLUMN, 0);
+        $query->execute();
+        return $query->fetchAll();
+    }
+
     private function createNewPlayer(string $name): int
     {
         $query = $this->db->prepare("

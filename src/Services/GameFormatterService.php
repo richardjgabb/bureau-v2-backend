@@ -11,13 +11,13 @@ use App\Objects\PotObject;
 
 class GameFormatterService
 {
-    public function createGameArray(GameModel $game, array $players, array $playerStats, array $pots): GameObject
+    public function createGameArray(GameModel $game, array $players, array $pots): GameObject
     {
         return new GameObject(
             $game->id,
             $game->name,
             $game->buy_in,
-            $this->createPlayersArray($players, $playerStats),
+            $this->createPlayersArray($players),
             $this->createGamePotsArray($pots)
         );
     }

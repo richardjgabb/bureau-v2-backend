@@ -22,11 +22,11 @@ class ScoreboardController
     public function __invoke(RequestInterface $request, ResponseInterface $response, array $args)
     {
         try {
-            $scoreboard = $this->scoreService->createScoreboardData((int) $args['gameId']);
+            $game = $this->scoreService->createScoreboardData((int) $args['gameId']);
             $responseBody = [
                 'message' => 'Successfully retrieved from db.',
                 'status' => StatusCode::HTTP_OK,
-                'data' => $scoreboard
+                'data' => $game->scoreboard
             ];
         } catch (Exception $e) {
             $responseBody = [

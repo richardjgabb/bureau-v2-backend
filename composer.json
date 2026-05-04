@@ -24,6 +24,7 @@
         "test": "phpunit",
         "seed": "php bin/console db:seed",
         "make:controller": "php bin/console make:controller",
-        "make:repository": "php bin/console make:repository"
+        "make:repository": "php bin/console make:repository",
+        "make:service": "php bin/console make:service"
     }
 }

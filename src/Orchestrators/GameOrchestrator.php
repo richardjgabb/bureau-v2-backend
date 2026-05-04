@@ -45,9 +45,8 @@ class GameOrchestrator
             throw new GameNotFoundException($gameId);
         }
         $players = $this->playerRepository->getAllPlayersForGame($gameId);
-        $playerStats = $this->playerStatsRepository->getAllPlayersStatsForGame($gameId);
         $pots = $this->potRepository->getAllPotsForGame($gameId);
-        $formattedGame = $this->formatter->createGameArray($game, $players, $playerStats, $pots);
+        $formattedGame = $this->formatter->createGameArray($game, $players, $pots);
 
         return $formattedGame;
     }

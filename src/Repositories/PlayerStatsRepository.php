@@ -17,26 +17,6 @@ class PlayerStatsRepository {
         $this->db = $db;
     }
 
-    public function getPlayerStatsForGame(string $playerId, string $gameId): array
-    {
-        $query = $this->db->prepare(
-            "SELECT player_stats.*,
-                   COUNT(DISTINCT scores.`round`) AS `hands_played`
-              FROM `player_stats`
-        INNER JOIN `scores` ON player_stats.`player_id` = scores.`player_id`
-             WHERE player_stats.`player_id` = :player_id
-               AND player_stats.`game_id` = :game_id
-          GROUP BY player_stats.id, player_stats.player_id, player_stats.game_id"
-        );
-
-        $query->bindParam(":player_id", $playerId);
-        $query->bindParam(":game_id", $gameId);
-        $query->execute();
-        $query->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, PlayerGameStatsModel::class);
-        return $query->fetch();
-    }
-
-
     public function getAllPlayersStatsForGame(string $gameId): array
     {
         $query = $this->db->prepare(

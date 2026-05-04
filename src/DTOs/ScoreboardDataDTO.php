@@ -8,12 +8,14 @@ class ScoreboardDataDTO
 {
     public array $scoreboard;
 
+    public function __construct(array $data = [])
+    {
+        $this->scoreboard = self::buildScoresArray($data);
+    }
+
     public static function from(array $data): self
     {
-        $dto = new self();
-        $dto->scoreboard = self::buildScoresArray($data);
-
-        return $dto;
+        return new self($data);
     }
 
     private static function buildScoresArray(array $data): array

@@ -31,6 +31,7 @@ return function (App $app) {
             $app->post('', [GameController::class, 'store']);
             $app->get('/{gameId}', [GameController::class, 'show']);
             $app->get('/{gameId}/scoreboard', ScoreboardController::class);
+            $app->get('/{gameId}/stats', [StatsController::class, 'show']);
         });
 
         $app->group('/scores', function (RouteCollectorProxy $app) {
