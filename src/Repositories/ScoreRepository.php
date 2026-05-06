@@ -122,4 +122,34 @@ class ScoreRepository {
 
         return true;
     }
+
+    public function updatePlayersScores(int $gameId, array $players): bool
+    {
+        foreach ($players as $player) {
+            if (!$this->updatePlayerScoreForGame($gameId, $player['id'], $player['score'])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function updatePlayerScoreForGame(int $gameId, int $playerId, int $score): bool
+    {
+        $query = $this->db->prepare("
+            UPDATE `scores` SET `score` = :score
+             WHERE `game_id` = :game_id
+               AND `player_id` = :player_id
+               AND `round` = (SELECT MAX(`round`)
+                                FROM `scores`
+                               WHERE `game_id` = :game_id
+                                 AND `player_id` = :player_id)
+        ");
+
+        $query->bindParam(":game_id", $gameId);
+        $query->bindParam(":player_id", $playerId);
+        $query->bindParam(":score", $score);
+
+        return $query->execute();
+    }
 }

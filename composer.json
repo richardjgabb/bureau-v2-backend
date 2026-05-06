@@ -25,6 +25,7 @@
         "seed": "php bin/console db:seed",
         "make:controller": "php bin/console make:controller",
         "make:repository": "php bin/console make:repository",
-        "make:service": "php bin/console make:service"
+        "make:service": "php bin/console make:service",
+        "make:DTO": "php bin/console make:DTO"
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Orchestrators;
 
+use App\DTOs\GameEditDTO;
 use App\Exceptions\GameNotFoundException;
 use App\Objects\GameObject;
 use App\Repositories\GameRepository;
@@ -77,5 +78,33 @@ class GameOrchestrator
         $this->playerStatsRepository->initiateStatsForAllPlayers($players ?? $existingPlayers, $gameId);
 
         return $this->getGameData((string) $gameId);
+    }
+
+    public function updateGame(GameEditDTO $data): bool
+    {
+        $existingPlayers = $this->playerRepository->getPlayerIdsForGame($data->id);
+
+        $newPlayers = array_filter($data->players, function ($player) {
+            return $player['id'] === null;
+        });
+
+        if (count($newPlayers) > 0) {
+            $createdPlayers = $this->playerRepository->createNewPlayers($newPlayers);
+        }
+
+        $playersNotLinked = array_filter($data->players, function ($player) use ($existingPlayers) {
+            return $player['id'] !== null && !in_array($player['id'], $existingPlayers);
+        });
+
+        $playersToLink = array_merge($createdPlayers ?? [], $playersNotLinked);
+
+        $playersToRemove = array_filter($existingPlayers, function ($player) use ($data) {
+            return !in_array($player['id'], $data->players);
+        });
+
+        $game = $this->gameRepository->updateGame($data->id, $data->name, $data->buyIn);
+        $players = $this->playerRepository->updatePlayersForGame( $data->id, $playersToLink, $playersToRemove);
+        $scores = $this->scoreRepository->updatePlayersScores($data->id, $data->players);
+        return true;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Classes\StatusCode;
+use App\DTOs\GameEditDTO;
 use App\Orchestrators\GameOrchestrator;
 use Exception;
 use Psr\Http\Message\ServerRequestInterface;
@@ -51,6 +52,27 @@ class GameController
                 'message' => 'Game successfully created.',
                 'status' => StatusCode::HTTP_CREATED,
                 'data' => $newGame
+            ];
+        } catch (Exception $e) {
+            $responseBody = [
+                'message' => $e->getMessage(),
+                'status' => StatusCode::HTTP_BAD_REQUEST,
+            ];
+        }
+        return $response->withJson($responseBody);
+    }
+
+    public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        //TODO: Requires a body of id, name, buyIn, players: { id (null if new), name, score }
+        $data = GameEditDTO::from((int) $args['gameId'], $request->getParsedBody());
+
+        try {
+            $updatedGame = $this->orchestrator->updateGame($data);
+            $responseBody = [
+                'message' => 'Game successfully updated.',
+                'status' => StatusCode::HTTP_OK,
+                'data' => $updatedGame
             ];
         } catch (Exception $e) {
             $responseBody = [

@@ -38,15 +38,15 @@ class StatsRepository {
     public function getGameStats(int $gameId): array
     {
         $query = $this->db->prepare(
-            "SELECT COUNT(pots.`id`) AS 'Total Hands',
-                           (SELECT COUNT(players.`id`) FROM players) AS 'Total Players',
+            "SELECT MAX(pots.`round`) AS 'Hands Played',
+                           (SELECT COUNT(player_game.`id`) FROM player_game WHERE player_game.`game_id` = :gameId) AS 'Total Players',
                            CONCAT('£', FORMAT(SUM(pots.`pot`)/100, 2)) AS 'Total Pot',
                             CONCAT('£', FORMAT(AVG(pots.`pot`)/100, 2)) AS 'Average Pot',
-                           (SELECT SUM(player_stats.`wins`) FROM player_stats) AS 'Pots Won',
+                           (SELECT SUM(player_stats.`wins`) FROM player_stats WHERE player_stats.`game_id` = :gameId) AS 'Pots Won',
                            CONCAT('£', FORMAT(MAX(pots.`pot`)/100, 2)) AS 'Biggest Pot',
-                           (SELECT SUM(player_stats.`bues`) FROM player_stats) AS 'Total Bues',
+                           (SELECT SUM(player_stats.`bues`) FROM player_stats WHERE player_stats.`game_id` = :gameId) AS 'Total Bues',
                             SUM(pots.`is_compuls`) AS 'Compulsory Pots',
-                           (SELECT SUM(player_stats.`compuls_bues`) FROM player_stats) AS 'Compulsory Bues'
+                           (SELECT SUM(player_stats.`compuls_bues`) FROM player_stats WHERE player_stats.`game_id` = :gameId) AS 'Compulsory Bues'
                       FROM `pots`
                       WHERE pots.`game_id` = :gameId
         ");

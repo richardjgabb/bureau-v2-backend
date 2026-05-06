@@ -6,6 +6,7 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use App\Console\CreateControllerCommand;
+use App\Console\CreateDTOCommand;
 use App\Console\CreateRepositoryCommand;
 use App\Console\CreateServiceCommand;
 use Symfony\Component\Console\Application;
@@ -38,12 +39,14 @@ $DbSeedCommand = $container->get(DatabaseSeedCommand::class);
 $createControllerCommand = $container->get(CreateControllerCommand::class);
 $createRepositoryCommand = $container->get(CreateRepositoryCommand::class);
 $createServiceCommand = $container->get(CreateServiceCommand::class);
+$createDTOCommand = $container->get(CreateDTOCommand::class);
 
 $application->addCommands([
     $DbSeedCommand,
     $createControllerCommand,
     $createRepositoryCommand,
-    $createServiceCommand
+    $createServiceCommand,
+    $createDTOCommand
 ]);
 
 $application->run();

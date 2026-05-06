@@ -120,4 +120,45 @@ class PlayerRepository {
 
         return true;
     }
+
+    private function removePlayerFromGame(int $playerId, int $gameId): bool
+    {
+        $query = $this->db->prepare("
+            DELETE FROM `player_game` WHERE `player_id` = :player_id AND `game_id` = :game_id
+        ");
+
+        $query->bindParam(":player_id", $playerId);
+        $query->bindParam(":game_id", $gameId);
+
+        return $query->execute();
+    }
+
+    private function removePlayersFromGame(array $playersToRemove, int $gameId): bool
+    {
+        foreach ($playersToRemove as $player) {
+            $this->removePlayerFromGame($player['id'], $gameId);
+        }
+
+        return true;
+    }
+
+    public function updatePlayersForGame(int $gameId, array $playersToLink, array $playersToRemove): bool
+    {
+        $this->linkPlayersToGame($playersToLink, $gameId);
+        $this->removePlayersFromGame($playersToRemove, $gameId);
+
+        return true;
+    }
+
+    private function updatePlayer(int $playerId, string $name): bool
+    {
+        $query = $this->db->prepare("
+            UPDATE `players` SET `name` = :name WHERE `id` = :player_id
+        ");
+
+        $query->bindParam(":game_id", $gameId);
+        $query->bindParam(":player_id", $playerId);
+
+        return $query->execute();
+    }
 }

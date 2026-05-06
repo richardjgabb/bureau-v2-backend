@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTOs\GameEditDTO;
 use App\Models\GameModel;
 use PDO;
 
@@ -58,5 +59,18 @@ class GameRepository {
         $query->execute();
 
         return (int) $this->db->lastInsertId();
+    }
+
+    public function updateGame(int $gameId, string $name, int $buyIn): bool
+    {
+        $query = $this->db->prepare("
+            UPDATE `games` SET `name` = :name, `buy_in` = :buy_in WHERE `id` = :game_id
+        ");
+
+        $query->bindParam(":name", $name);
+        $query->bindParam(":buy_in", $buyIn);
+        $query->bindParam(":game_id", $gameId);
+
+        return $query->execute();
     }
 }
