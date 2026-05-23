@@ -38,14 +38,14 @@ class StatsRepository {
     public function getGameStats(int $gameId): array
     {
         $query = $this->db->prepare(
-            "SELECT MAX(pots.`round`) AS 'Hands Played',
+            "SELECT COALESCE(MAX(pots.`round`), 0) AS 'Hands Played',
                            (SELECT COUNT(player_game.`id`) FROM player_game WHERE player_game.`game_id` = :gameId) AS 'Total Players',
-                           CONCAT('£', FORMAT(SUM(pots.`pot`)/100, 2)) AS 'Total Pot',
-                            CONCAT('£', FORMAT(AVG(pots.`pot`)/100, 2)) AS 'Average Pot',
+                           CONCAT('£', FORMAT(COALESCE(SUM(pots.`pot`), 0)/100, 2)) AS 'Total Pot',
+                            CONCAT('£', FORMAT(COALESCE(AVG(pots.`pot`), 0)/100, 2)) AS 'Average Pot',
                            (SELECT SUM(player_stats.`wins`) FROM player_stats WHERE player_stats.`game_id` = :gameId) AS 'Pots Won',
-                           CONCAT('£', FORMAT(MAX(pots.`pot`)/100, 2)) AS 'Biggest Pot',
+                           CONCAT('£', FORMAT(COALESCE(MAX(pots.`pot`), 0)/100, 2)) AS 'Biggest Pot',
                            (SELECT SUM(player_stats.`bues`) FROM player_stats WHERE player_stats.`game_id` = :gameId) AS 'Total Bues',
-                            SUM(pots.`is_compuls`) AS 'Compulsory Pots',
+                            COALESCE(SUM(pots.`is_compuls`), 0) AS 'Compulsory Pots',
                            (SELECT SUM(player_stats.`compuls_bues`) FROM player_stats WHERE player_stats.`game_id` = :gameId) AS 'Compulsory Bues'
                       FROM `pots`
                       WHERE pots.`game_id` = :gameId
@@ -54,11 +54,16 @@ class StatsRepository {
         return $query->fetch();
     }
 
-    public function getPlayerStatsForGame(int $playerId, int $gameId): PlayerGameStatsModel
+    public function getPlayerStatsForGame(int $playerId, int $gameId): array
     {
         $query = $this->db->prepare(
-            "SELECT player_stats.*,
-                   COUNT(DISTINCT scores.`round`) AS `hands_played`
+            "SELECT player_stats.wins AS `Pots won`,
+                           player_stats.bues AS `Bues`,
+                           player_stats.compuls_wins AS `Compuls pots won`,
+                           player_stats.compuls_bues AS `Bues on compuls`,
+                           player_stats.hands_dealt AS `Hands dealt`,
+                           player_stats.wins_with_deal AS `Pots won with deal`,
+                           player_stats.bues_with_deal AS `Bues with deal`
               FROM `player_stats`
         INNER JOIN `scores` ON player_stats.`player_id` = scores.`player_id`
              WHERE player_stats.`player_id` = :player_id
@@ -69,7 +74,6 @@ class StatsRepository {
         $query->bindParam(":player_id", $playerId);
         $query->bindParam(":game_id", $gameId);
         $query->execute();
-        $query->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, PlayerGameStatsModel::class);
         return $query->fetch();
     }
 }

@@ -44,7 +44,7 @@ class StatsController
             ];
         } catch (Exception $e) {
             $responseBody = [
-                'message' => 'Error retrieving stats.',
+                'message' => $e->getMessage(),
                 'status' => StatusCode::HTTP_BAD_REQUEST,
             ];
         }
