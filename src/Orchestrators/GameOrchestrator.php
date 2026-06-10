@@ -17,7 +17,6 @@ use App\Services\GameFormatterService;
 class GameOrchestrator
 {
     private GameRepository $gameRepository;
-    private PlayerStatsRepository $playerStatsRepository;
     private PlayerRepository $playerRepository;
     private GameFormatterService $formatter;
     private PotRepository $potRepository;
@@ -25,14 +24,12 @@ class GameOrchestrator
 
     public function __construct(
         GameRepository $gameRepository,
-        PlayerStatsRepository $playerStatsRepository,
         PlayerRepository $playerRepository,
         GameFormatterService $formatter,
         PotRepository $potRepository,
         ScoreRepository $scoreRepository
     ) {
         $this->gameRepository = $gameRepository;
-        $this->playerStatsRepository = $playerStatsRepository;
         $this->playerRepository = $playerRepository;
         $this->formatter = $formatter;
         $this->potRepository = $potRepository;
@@ -75,7 +72,6 @@ class GameOrchestrator
 
         $this->playerRepository->linkPlayersToGame($players ?? $existingPlayers, $gameId);
         $this->scoreRepository->initiateScoresForAllPlayers($players ?? $existingPlayers, $gameId);
-        $this->playerStatsRepository->initiateStatsForAllPlayers($players ?? $existingPlayers, $gameId);
 
         return $this->getGameData((string) $gameId);
     }
@@ -84,27 +80,17 @@ class GameOrchestrator
     {
         $existingPlayers = $this->playerRepository->getPlayerIdsForGame($data->id);
 
-        $newPlayers = array_filter($data->players, function ($player) {
-            return $player['id'] === null;
+        $newPlayers = array_filter(array_keys($data->players), function ($player) use ($existingPlayers) {
+            return !in_array($player, $existingPlayers);
         });
-
-        if (count($newPlayers) > 0) {
-            $createdPlayers = $this->playerRepository->createNewPlayers($newPlayers);
-        }
-
-        $playersNotLinked = array_filter($data->players, function ($player) use ($existingPlayers) {
-            return $player['id'] !== null && !in_array($player['id'], $existingPlayers);
-        });
-
-        $playersToLink = array_merge($createdPlayers ?? [], $playersNotLinked);
 
         $playersToRemove = array_filter($existingPlayers, function ($player) use ($data) {
-            return !in_array($player['id'], $data->players);
+            return !array_key_exists($player, $data->players);
         });
 
         $game = $this->gameRepository->updateGame($data->id, $data->name, $data->buyIn);
-        $players = $this->playerRepository->updatePlayersForGame( $data->id, $playersToLink, $playersToRemove);
-        $scores = $this->scoreRepository->updatePlayersScores($data->id, $data->players);
+        $players = $this->playerRepository->updatePlayersForGame( $data->id, $newPlayers, $playersToRemove);
+        $scores = $this->scoreRepository->updatePlayersScores($data->id, $data->players, $data->round);
         return true;
     }
 }

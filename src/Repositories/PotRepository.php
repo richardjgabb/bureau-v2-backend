@@ -20,9 +20,16 @@ class PotRepository {
     public function getAllPotsForGame($gameId): array
     {
         $query = $this->db->prepare(
-            "SELECT pots.* FROM `pots`
-                 WHERE pots.`game_id` = :game_id
-              ORDER BY pots.`round` ASC
+            "SELECT
+                           p.*,
+                           COUNT(s.id) AS `bues`
+                      FROM pots p
+                 LEFT JOIN scores s
+                        ON s.pot_id = p.id
+                       AND s.bued = 1
+                     WHERE p.game_id = :game_id
+                  GROUP BY p.id
+                  ORDER BY p.round ASC;
         ");
 
         $query->bindParam(":game_id", $gameId);
@@ -31,11 +38,11 @@ class PotRepository {
         return $query->fetchAll();
     }
 
-    public function addNewPot(int $gameId, int $round, ?int $winnerId, int $potSize, bool $isCompuls, ?int $dealerId, int $amountOfBues): bool
+    public function addNewPot(int $gameId, int $round, ?int $winnerId, int $potSize, bool $isCompuls, ?int $dealerId): bool
     {
         $query = $this->db->prepare("
-            INSERT INTO `pots` (`game_id`, `round`, `pot`, `pot_winner`, `is_compuls`, `amount_of_bues`, `dealer_id`)
-               VALUES (:game_id, :round, :pot, :winner_id, :is_compuls, :amount_of_bues, :dealer_id);
+            INSERT INTO `pots` (`game_id`, `round`, `pot`, `pot_winner`, `is_compuls`, `dealer_id`)
+               VALUES (:game_id, :round, :pot, :winner_id, :is_compuls, :dealer_id);
         ");
 
         $query->bindParam(":game_id", $gameId);
@@ -43,7 +50,6 @@ class PotRepository {
         $query->bindParam(":pot", $potSize);
         $query->bindParam(":winner_id", $winnerId);
         $query->bindParam(":is_compuls", $isCompuls);
-        $query->bindParam(":amount_of_bues", $amountOfBues);
         $query->bindParam(":dealer_id", $dealerId);
         return $query->execute();
     }

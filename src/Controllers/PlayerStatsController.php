@@ -5,33 +5,22 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Classes\StatusCode;
-use App\Repositories\PlayerStatsRepository;
+use App\Repositories\StatsRepository;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Http\Interfaces\ResponseInterface;
 
 class PlayerStatsController
 {
-    private PlayerStatsRepository $repository;
+    private StatsRepository $statsRepository;
 
-    public function __construct(PlayerStatsRepository $repository)
+    public function __construct(StatsRepository $statsRepository)
     {
-        $this->repository = $repository;
+        $this->statsRepository = $statsRepository;
     }
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-        $playerStats = $this->repository->getPlayerStatsForGame($args['playerId'], $args['gameId']);
-        $responseBody = [
-            'message' => 'Successfully retrieved from db.',
-            'status' => StatusCode::HTTP_OK,
-            'data' => $playerStats
-        ];
-        return $response->withJson($responseBody);
-    }
-
-    public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
-    {
-        $playerStats = $this->repository->getPlayerStats((int) $args['playerId']);
+        $playerStats = $this->statsRepository->getPlayerStatsForGame($args['playerId'], $args['gameId']);
         $responseBody = [
             'message' => 'Successfully retrieved from db.',
             'status' => StatusCode::HTTP_OK,

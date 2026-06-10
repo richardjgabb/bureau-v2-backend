@@ -11,6 +11,10 @@ class ScoreModel
     public string $game_id;
     public int $round;
     public int $score;
+    public bool $isDealer;
+    public bool $isCompuls;
+    public bool $win;
+    public bool $bued;
 
     public function toArray()
     {
@@ -20,6 +24,10 @@ class ScoreModel
             'game_id' => $this->game_id,
             'round' => $this->round,
             'score' => $this->score,
+            'isDealer' => $this->isDealer,
+            'isCompuls' => $this->isCompuls,
+            'win' => $this->win,
+            'bued' => $this->bued
         ];
     }
 }

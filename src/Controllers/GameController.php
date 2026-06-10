@@ -13,6 +13,7 @@ use Slim\Http\Interfaces\ResponseInterface;
 
 class GameController
 {
+    // TODO: FIX DATA TO MATCH DB REFACTOR
     private GameOrchestrator $orchestrator;
 
     public function __construct(GameOrchestrator $orchestrator)
@@ -64,7 +65,6 @@ class GameController
 
     public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-        //TODO: Requires a body of id, name, buyIn, players: { id (null if new), name, score }
         $data = GameEditDTO::from((int) $args['gameId'], $request->getParsedBody());
 
         try {

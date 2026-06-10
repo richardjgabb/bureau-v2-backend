@@ -28,7 +28,7 @@ class GameObject implements JsonSerializable
     public function jsonSerialize(): array
     {
         $latestPot = $this->pots[count($this->pots) - 1] ?? null;
-        if (!$latestPot || ($latestPot &&$latestPot->amountOfBues === 0 && $latestPot->pot_winner !== null)) {
+        if (!$latestPot || ($latestPot && $latestPot->amountOfBues === 0 && $latestPot->pot_winner !== null)) {
             $currentPotSize = 0;
         } else {
             $currentPotSize = $latestPot->pot * $latestPot->amountOfBues;

@@ -19,13 +19,13 @@ class StoreRoundObject
         array $roundData
     )
     {
-        $this->gameId = $roundData['id'];
+        $this->gameId = (int) $roundData['id'];
         $this->winnerId = $roundData['potWinnerId'] ?? null;
         $this->dealerId = $roundData['dealerId'] ?? null;
-        $this->buyIn = $roundData['buyIn'];
-        $this->round = $roundData['round'];
+        $this->buyIn = (int) $roundData['buyIn'];
+        $this->round = (int) $roundData['round'];
         $this->buedIds = $roundData['buedIds'] ?? [];
         $this->players = $roundData['players'] ?? [];
-        $this->currentPotSize = $roundData['currentPotSize'];
+        $this->currentPotSize = (int) $roundData['currentPotSize'];
     }
 }

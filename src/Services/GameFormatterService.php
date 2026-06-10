@@ -26,7 +26,7 @@ class GameFormatterService
     {
         $potsArray = [];
         foreach ($pots as $entry) {
-            $pot = new PotObject($entry->round, $entry->pot, $entry->pot_winner, $entry->amount_of_bues);
+            $pot = new PotObject($entry->round, $entry->pot, $entry->winner_id, $entry->bues);
             $potsArray[] = $pot;
         }
         return $potsArray;

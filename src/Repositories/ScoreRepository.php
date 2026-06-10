@@ -67,24 +67,30 @@ class ScoreRepository {
         }
     }
 
-    private function insertNewScore(int $gameId, int $round, int $playerId, int $score): bool
+    private function insertNewScore(int $gameId, int $round, int $playerId, int $potId, int $score, bool $isDealer, bool $isCompuls, bool $win, bool $bued): bool
     {
         $query = $this->db->prepare("
-            INSERT INTO `scores` (`game_id`, `round`, `player_id`, `score`) VALUES (:game_id, :round, :player_id, :score)
+            INSERT INTO `scores` (`game_id`, `round`, `player_id`, `pot_id`, `score`, `isDealer`, `isCompuls`, `win`, `bued`)
+                 VALUES (:game_id, :round, :player_id, :score, :isDealer, :isCompuls, :win, :bued)
         ");
 
         $query->bindParam(":game_id", $gameId);
         $query->bindParam(":round", $round);
         $query->bindParam(":player_id", $playerId);
+        $query->bindParam(":pot_id", $potId);
         $query->bindParam(":score", $score);
+        $query->bindParam(":isDealer", $isDealer);
+        $query->bindParam(":isCompuls", $isCompuls);
+        $query->bindParam(":win", $win);
+        $query->bindParam(":bued", $bued);
 
         return $query->execute();
     }
 
-    public function addPlayersScores(int $gameId, int $round, array $scores): bool
+    public function addPlayersScores(int $gameId, int $round, $potId, array $scores, int $dealerId, bool $isCompuls, int $winnerId, array $buedIds): bool
     {
         foreach ($scores as $playerId => $score) {
-            if (!$this->insertNewScore($gameId, $round, $playerId, $score)) {
+            if (!$this->insertNewScore($gameId, $round, $playerId, $potId, $score, $playerId === $dealerId, $isCompuls, $playerId === $winnerId, in_array($playerId, $buedIds))) {
                 return false;
             }
         }
@@ -96,14 +102,14 @@ class ScoreRepository {
     {
         $query = $this->db->prepare("
             SELECT `scores`.`player_id`,
-                   `scores`.`round`,
+                   `pots`.`round`,
                    `scores`.`score`,
-                   `pots`.`pot_winner`,
+                   `pots`.`winner_id`,
                    `pots`.`pot`
               FROM `scores`
-        LEFT JOIN `pots` ON `scores`.`game_id` = `pots`.`game_id` AND `scores`.`round` = `pots`.`round`
-             WHERE `scores`.`game_id` = :game_id
-          ORDER BY `scores`.`round` ASC, `scores`.`player_id` ASC
+        LEFT JOIN `pots` ON `scores`.`pot_id` = `pots`.`id`
+             WHERE `pots`.`game_id` = :game_id
+          ORDER BY `pots`.`round` ASC, `scores`.`player_id` ASC
         ");
 
         $query->bindParam(":game_id", $gameId);
@@ -115,7 +121,8 @@ class ScoreRepository {
     public function initiateScoresForAllPlayers(array $players, int $gameId): bool
     {
         foreach ($players as $player) {
-            if (!$this->insertNewScore($gameId, 0, $player['id'], $player['score'])) {
+            //TODO: Make Pot Id not 0
+            if (!$this->insertNewScore($gameId, 0, $player['id'], 0, $player['score'], false, false, false, false)) {
                 return false;
             }
         }
@@ -123,27 +130,53 @@ class ScoreRepository {
         return true;
     }
 
-    public function updatePlayersScores(int $gameId, array $players): bool
+    public function updatePlayersScores(int $gameId, array $players, int $round): bool
     {
-        foreach ($players as $player) {
-            if (!$this->updatePlayerScoreForGame($gameId, $player['id'], $player['score'])) {
+        foreach ($players as $player => $score) {
+            $latestScore = $this->getLatestScoreForPlayer($gameId, $player);
+
+            if (!$latestScore) {
+                //TODO: Make Pot Id not 0
+                $this->insertNewScore($gameId, $round, $player, 0, $score, false, false, false, false);
+                continue;
+            }
+
+            if (!$this->updatePlayerScoreForGame($gameId, $player, $score)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private function getLatestScoreForPlayer(int $gameId, int $playerId)
+    {
+        $query = $this->db->prepare("
+            SELECT `scores`.*
+              FROM `scores`
+             WHERE `scores`.`game_id` = :game_id
+               AND `scores`.`player_id` = :player_id
+          ORDER BY `scores`.`round` DESC
+             LIMIT 1
+        ");
+
+        $query->bindParam(":game_id", $gameId);
+        $query->bindParam(":player_id", $playerId);
+        $query->execute();
+        return $query->fetch();
     }
 
     private function updatePlayerScoreForGame(int $gameId, int $playerId, int $score): bool
     {
         $query = $this->db->prepare("
-            UPDATE `scores` SET `score` = :score
-             WHERE `game_id` = :game_id
-               AND `player_id` = :player_id
-               AND `round` = (SELECT MAX(`round`)
-                                FROM `scores`
-                               WHERE `game_id` = :game_id
-                                 AND `player_id` = :player_id)
+            UPDATE `scores` s
+               SET s.`score` = :score
+             WHERE s.`game_id` = :game_id
+               AND s.`player_id` = :player_id;
+               AND s.`round` = (SELECT MAX(`round`)
+                                  FROM `scores`
+                                 WHERE `game_id` = :game_id
+                                   AND `player_id` = :player_id);
         ");
 
         $query->bindParam(":game_id", $gameId);

@@ -11,9 +11,9 @@ class PotModel
     public int $round;
     public ?int $pot;
     public bool $is_compuls;
-    public ?int $pot_winner;
-    public int $amount_of_bues;
     public ?int $dealer_id;
+    public ?int $winner_id;
+    public int $bues;
 
     public function toArray()
     {
@@ -23,9 +23,9 @@ class PotModel
             'round' => $this->round,
             'pot' => $this->pot,
             'is_compuls' => $this->is_compuls,
-            'pot_winner' => $this->pot_winner,
-            'amount_of_bues' => $this->amount_of_bues,
-            'dealer_id' => $this->dealer_id
+            'dealer_id' => $this->dealer_id,
+            'winner_id' => $this->winner_id,
+            'bues' => $this->bues
         ];
     }
 }

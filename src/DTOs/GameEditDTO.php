@@ -10,6 +10,7 @@ class GameEditDTO
     public string $name;
     public int $buyIn;
     public array $players;
+    public int $round;
 
     public function __construct(int $id, array $data)
     {
@@ -17,6 +18,7 @@ class GameEditDTO
         $this->name = $data['name'];
         $this->buyIn = $data['buyIn'];
         $this->players = $data['players'];
+        $this->round = $data['round'];
     }
 
 

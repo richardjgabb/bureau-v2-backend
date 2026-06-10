@@ -21,8 +21,8 @@ class PlayerRepository {
         $query = $this->db->prepare("
             SELECT players.`id`,
                    players.`name`,
-                   (SELECT SUM(`wins`) FROM `player_stats` WHERE player_stats.`player_id` = players.`id`) AS `wins`,
-                   (SELECT SUM(`bues`) FROM `player_stats` WHERE player_stats.`player_id` = players.`id`) AS `bues`,
+                   (SELECT COUNT(`winner_id`) FROM `pots` WHERE pots.`winner_id` = players.`id`) AS `wins`,
+                   (SELECT COUNT(`bued`) FROM `scores` WHERE scores.`player_id` = players.`id` AND scores.`bued` = 1) AS `bues`,
                    (SELECT COUNT(player_game.`id`)
                       FROM `player_game`
                      WHERE player_game.`player_id` = players.`id`
@@ -41,9 +41,10 @@ class PlayerRepository {
                            players.name,
                            (SELECT scores.`score`
                               FROM scores
+                        INNER JOIN pots ON scores.`pot_id` = pots.`id`
                              WHERE scores.`player_id` = players.`id`
-                               AND scores.game_id = :game_id
-                             ORDER BY scores.`round` DESC
+                               AND pots.game_id = :game_id
+                             ORDER BY pots.`round` DESC
                              LIMIT 1) AS current_score
                       FROM `players`
                 INNER JOIN `player_game` ON players.`id` = player_game.`player_id`
@@ -114,8 +115,8 @@ class PlayerRepository {
 
     public function linkPlayersToGame(array $players, int $gameId): bool
     {
-        foreach ($players as $player) {
-            $this->linkPlayerToGame($player['id'], $gameId);
+        foreach ($players as $playerId) {
+            $this->linkPlayerToGame($playerId, $gameId);
         }
 
         return true;
@@ -142,10 +143,14 @@ class PlayerRepository {
         return true;
     }
 
-    public function updatePlayersForGame(int $gameId, array $playersToLink, array $playersToRemove): bool
+    public function updatePlayersForGame(int $gameId, array $newPlayers, array $playersToRemove): bool
     {
-        $this->linkPlayersToGame($playersToLink, $gameId);
+        if (count($newPlayers) > 0) {
+            $this->linkPlayersToGame($newPlayers, $gameId);
+        }
+        if (count($playersToRemove) > 0) {
         $this->removePlayersFromGame($playersToRemove, $gameId);
+        }
 
         return true;
     }
@@ -160,5 +165,22 @@ class PlayerRepository {
         $query->bindParam(":player_id", $playerId);
 
         return $query->execute();
+    }
+
+    public function getPlayersNotInGame(int $gameId): array
+    {
+        $query = $this->db->prepare("
+            SELECT *
+              FROM `players`
+             WHERE `id` NOT IN (
+                    SELECT `player_id`
+                      FROM `player_game`
+                     WHERE `game_id` = :game_id
+             )
+        ");
+
+        $query->bindParam(":game_id", $gameId);
+        $query->execute();
+        return $query->fetchAll();
     }
 }

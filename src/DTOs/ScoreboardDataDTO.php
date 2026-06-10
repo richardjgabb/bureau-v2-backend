@@ -29,7 +29,7 @@ class ScoreboardDataDTO
                 $scoreboard[$roundNum] = [
                     'round'      => $roundNum,
                     'pot'        => $row['pot'],
-                    'pot_winner' => $row['pot_winner'],
+                    'pot_winner' => $row['winner_id'],
                     'scores'     => []
                 ];
             }

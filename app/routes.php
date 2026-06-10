@@ -11,8 +11,6 @@ use App\Controllers\ScoreboardController;
 use App\Controllers\ScoresController;
 use App\Controllers\StatsController;
 use Slim\App;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Routing\RouteCollectorProxy;
 
 return function (App $app) {
@@ -23,15 +21,17 @@ return function (App $app) {
         $app->group('/players', function (RouteCollectorProxy $app) {
             $app->get('', [PlayerController::class, 'index']);
             $app->get('{playerId}/stats/{gameId}', PlayerStatsController::class);
-            $app->get('/{playerId}', [PlayerStatsController::class, 'show']);
+            $app->get('/{playerId}', [PlayerController::class, 'show']);
         });
 
         $app->group('/games', function (RouteCollectorProxy $app) {
             $app->get('', [GameController::class, 'index']);
             $app->post('', [GameController::class, 'store']);
             $app->get('/{gameId}', [GameController::class, 'show']);
+            $app->put('/{gameId}', [GameController::class, 'update']);
             $app->get('/{gameId}/scoreboard', ScoreboardController::class);
             $app->get('/{gameId}/stats', [StatsController::class, 'show']);
+            $app->get('/{gameId}/availablePlayers', [PlayerController::class, 'showPlayersNotInGame']);
         });
 
         $app->group('/scores', function (RouteCollectorProxy $app) {
@@ -44,15 +44,5 @@ return function (App $app) {
         $app->get('/login', LoginController::class);
         $app->get('/newGame', [GameController::class, 'newGame']);
         $app->post('/register', RegisterUserController::class);
-    });
-
-
-// In production, Run npm run build and put the build folder in the backend/public folder
-    $app->get('/{routes:.+}', function (Request $request, Response $response, array $args) {
-        $file = __DIR__ . '/../build/' . $args['routes'];
-        if (file_exists($file)) {
-            return $response->write(file_get_contents($file));
-        }
-        return $response->write(file_get_contents(__DIR__ . '/../build/index.html'));
     });
 };

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Models\PlayerGameStatsModel;
 use PDO;
 
 class StatsRepository {
@@ -19,16 +18,26 @@ class StatsRepository {
     public function getAllStats(): array
     {
         $query = $this->db->prepare(
-            "SELECT COUNT(pots.`id`) AS 'Total Hands',
-                           (SELECT COUNT(players.`id`) FROM players) AS 'Total Players',
-                           CONCAT('£', FORMAT(SUM(pots.`pot`)/100, 2)) AS 'Total Pot',
-                            CONCAT('£', FORMAT(AVG(pots.`pot`)/100, 2)) AS 'Average Pot',
-                           (SELECT SUM(player_stats.`wins`) FROM player_stats) AS 'Pots Won',
-                           CONCAT('£', FORMAT(MAX(pots.`pot`)/100, 2)) AS 'Biggest Pot',
-                           (SELECT SUM(player_stats.`bues`) FROM player_stats) AS 'Total Bues',
-                            SUM(pots.`is_compuls`) AS 'Compulsory Pots',
-                           (SELECT SUM(player_stats.`compuls_bues`) FROM player_stats) AS 'Compulsory Bues'
-                      FROM `pots`
+            "SELECT
+                            COUNT(p.id) AS `Total Hands`,
+                            (SELECT COUNT(*) FROM players) AS `Total Players`,
+                            CONCAT('£', FORMAT(SUM(p.pot)/100, 2)) AS `Total Pot`,
+                            CONCAT('£', FORMAT(AVG(p.pot)/100, 2)) AS `Average Pot`,
+                            COUNT(p.winner_id) AS `Pots Won`,
+                            CONCAT('£', FORMAT(MAX(p.pot)/100, 2)) AS `Biggest Pot`,
+                            SUM(p.is_compuls) AS `Compulsory Pots`,
+
+                            -- Using MAX() to satisfy the only_full_group_by restriction
+                            MAX(s.total_bues) AS `Total Bues`,
+                            MAX(s.comp_bues) AS `Compulsory Bues`
+                        FROM `pots` p
+                        CROSS JOIN (
+                            SELECT
+                                SUM(bued) AS total_bues,
+                                SUM(scores.bued * p_sub.is_compuls) AS comp_bues
+                            FROM `scores`
+                            INNER JOIN `pots` p_sub ON scores.pot_id = p_sub.id
+                        ) s;
         ");
 
         $query->execute();
@@ -38,17 +47,29 @@ class StatsRepository {
     public function getGameStats(int $gameId): array
     {
         $query = $this->db->prepare(
-            "SELECT COALESCE(MAX(pots.`round`), 0) AS 'Hands Played',
-                           (SELECT COUNT(player_game.`id`) FROM player_game WHERE player_game.`game_id` = :gameId) AS 'Total Players',
-                           CONCAT('£', FORMAT(COALESCE(SUM(pots.`pot`), 0)/100, 2)) AS 'Total Pot',
-                            CONCAT('£', FORMAT(COALESCE(AVG(pots.`pot`), 0)/100, 2)) AS 'Average Pot',
-                           (SELECT SUM(player_stats.`wins`) FROM player_stats WHERE player_stats.`game_id` = :gameId) AS 'Pots Won',
-                           CONCAT('£', FORMAT(COALESCE(MAX(pots.`pot`), 0)/100, 2)) AS 'Biggest Pot',
-                           (SELECT SUM(player_stats.`bues`) FROM player_stats WHERE player_stats.`game_id` = :gameId) AS 'Total Bues',
-                            COALESCE(SUM(pots.`is_compuls`), 0) AS 'Compulsory Pots',
-                           (SELECT SUM(player_stats.`compuls_bues`) FROM player_stats WHERE player_stats.`game_id` = :gameId) AS 'Compulsory Bues'
-                      FROM `pots`
-                      WHERE pots.`game_id` = :gameId
+            "SELECT
+                        COALESCE(MAX(p.round), 0) AS `Hands Played`,
+                        COALESCE(MAX(pg.total_players), 0) AS `Total Players`,
+                        CONCAT('£', FORMAT(COALESCE(SUM(p.pot), 0) / 100, 2)) AS `Total Pot`,
+                        CONCAT('£', FORMAT(COALESCE(AVG(p.pot), 0) / 100, 2)) AS `Average Pot`,
+                        COUNT(p.winner_id) AS `Pots Won`,
+                        CONCAT('£', FORMAT(COALESCE(MAX(p.pot), 0) / 100, 2)) AS `Biggest Pot`,
+                        COALESCE(SUM(s.total_bues), 0) AS `Total Bues`,
+                        COALESCE(SUM(p.is_compuls), 0) AS `Compulsory Pots`,
+                        COALESCE(SUM(CASE WHEN p.is_compuls = 1 THEN s.total_bues ELSE 0 END), 0) AS `Compulsory Bues`
+                    FROM pots p
+                    CROSS JOIN (
+                        SELECT COUNT(id) AS total_players
+                        FROM player_game
+                        WHERE game_id = :gameId
+                    ) pg
+                    LEFT JOIN (
+                        SELECT pot_id, COUNT(bued) AS total_bues
+                        FROM scores
+                        WHERE bued = 1
+                        GROUP BY pot_id
+                    ) s ON s.pot_id = p.id
+                    WHERE p.game_id = :gameId;
         ");
         $query->execute(['gameId' => $gameId]);
         return $query->fetch();
@@ -57,22 +78,67 @@ class StatsRepository {
     public function getPlayerStatsForGame(int $playerId, int $gameId): array
     {
         $query = $this->db->prepare(
-            "SELECT player_stats.wins AS `Pots won`,
-                           player_stats.bues AS `Bues`,
-                           player_stats.compuls_wins AS `Compuls pots won`,
-                           player_stats.compuls_bues AS `Bues on compuls`,
-                           player_stats.hands_dealt AS `Hands dealt`,
-                           player_stats.wins_with_deal AS `Pots won with deal`,
-                           player_stats.bues_with_deal AS `Bues with deal`
-              FROM `player_stats`
-        INNER JOIN `scores` ON player_stats.`player_id` = scores.`player_id`
-             WHERE player_stats.`player_id` = :player_id
-               AND player_stats.`game_id` = :game_id
-          GROUP BY player_stats.id, player_stats.player_id, player_stats.game_id"
-        );
+            "SELECT
+                        SUM(CASE WHEN p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Pots won`,
+                        SUM(s.bued) AS `Bues`,
+                        SUM(CASE WHEN p.is_compuls = 1 AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Compuls pots won`,
+                        SUM(CASE WHEN p.is_compuls = 1 AND s.bued = 1 THEN 1 ELSE 0 END) AS `Bues on compuls`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id THEN 1 ELSE 0 END) AS `Hands dealt`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Pots won with deal`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id AND s.bued = 1 THEN 1 ELSE 0 END) AS `Bues with deal`
+
+                    FROM scores s
+                    INNER JOIN pots p ON s.pot_id = p.id
+                    WHERE s.player_id = :player_id
+                    AND p.game_id = :game_id;
+        ");
 
         $query->bindParam(":player_id", $playerId);
         $query->bindParam(":game_id", $gameId);
+        $query->execute();
+        return $query->fetch();
+    }
+
+    public function getPlayerStats(int $playerId)
+    {
+        $query = $this->db->prepare(
+            "SELECT
+                        SUM(CASE WHEN p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Pots Won`,
+                        SUM(s.bued) AS `Bues`,
+                        SUM(CASE WHEN p.is_compuls = 1 AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Compuls pots won`,
+                        SUM(CASE WHEN p.is_compuls = 1 AND s.bued = 1 THEN 1 ELSE 0 END) AS `Bues on compuls`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id THEN 1 ELSE 0 END) AS `Hands dealt`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Pots won with deal`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id AND s.bued = 1 THEN 1 ELSE 0 END) AS `Bues with deal`,
+                        COUNT(*) AS `Hands Played`,
+                        (SELECT COUNT(DISTINCT game_id) FROM player_game WHERE player_id = :player_id) AS `Games Played`,
+                        (
+                            SELECT CONCAT('£', FORMAT(MAX(p2.pot) / 100, 2))
+                            FROM pots p2
+                            WHERE p2.winner_id = :player_id
+                        ) AS `Highest Pot Won`,
+                        (
+                            SELECT CONCAT('£', FORMAT(SUM(x.top_score) / 100, 2))
+                            FROM (
+                                SELECT MAX(s2.score) AS top_score
+                                FROM scores s2
+                                JOIN pots p2 ON p2.id = s2.pot_id
+                                WHERE s2.player_id = :player_id
+                                GROUP BY p2.game_id
+                            ) x
+                        ) AS `Total Score`,
+                        (
+                            SELECT pl.name
+                            FROM players pl
+                            WHERE pl.id = :player_id
+                        ) AS `Player Name`
+
+                    FROM scores s
+                    JOIN pots p ON p.id = s.pot_id
+                    WHERE s.player_id = :player_id;
+        ");
+
+        $query->bindParam(":player_id", $playerId);
         $query->execute();
         return $query->fetch();
     }

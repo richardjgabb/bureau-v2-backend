@@ -13,7 +13,7 @@ class PotObject implements JsonSerializable
     public ?int $pot_winner;
     public int $amountOfBues;
 
-    public function __construct(int $round, int $pot, ?int $pot_winner = null, ?int $amountOfBues = 0)
+    public function __construct(int $round, int $pot, ?int $pot_winner = null, int $amountOfBues = 0)
     {
         $this->round = $round;
         $this->pot = $pot;
@@ -27,7 +27,7 @@ class PotObject implements JsonSerializable
             'round' => $this->round,
             'pot' => $this->pot,
             'winner' => $this->pot_winner,
-            'amount_of_bues' => $this->amountOfBues
+            'bues' => $this->amountOfBues
         ];
     }
 }

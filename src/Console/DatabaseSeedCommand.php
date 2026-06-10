@@ -34,7 +34,7 @@ class DatabaseSeedCommand extends Command
             $output->writeln('<comment>Truncating tables...</comment>');
             $this->db->exec('SET FOREIGN_KEY_CHECKS = 0');
 
-            $tables = ['scores', 'games', 'players', 'pots', 'player_stats', 'player_game'];
+            $tables = ['scores', 'games', 'players', 'pots', 'player_game'];
 
             foreach ($tables as $table) {
                 $output->writeln(" - Truncating <info>$table</info>");
@@ -64,7 +64,6 @@ class DatabaseSeedCommand extends Command
         $this->seedPlayerGame();
         $this->seedPots();
         $this->seedScores();
-        $this->seedStats();
     }
 
     private function seedPlayers(): void
@@ -97,53 +96,33 @@ class DatabaseSeedCommand extends Command
 
     private function seedPots(): void
     {
-        $potStmt = $this->db->prepare("INSERT INTO `pots` (`id`, `game_id`, `round`, `pot`, `is_compuls`, `pot_winner`, `amount_of_bues`)
+        $potStmt = $this->db->prepare("INSERT INTO `pots` (`id`, `game_id`, `round`, `pot`, `is_compuls`, `winner_id`)
             VALUES
-                (1, 2, 1, 80, 1, 8, 0),
-                (2, 3, 1, 80, 1, 1, 0),
-                (3, 3, 2, 80, 0, 1, 0);
+                (1, 2, 1, 80, 1, 5),
+                (2, 3, 1, 80, 1, 1),
+                (3, 3, 2, 240, 0, 1);
             ");
         $potStmt->execute();
     }
 
     private function seedScores(): void
     {
-        $scoreStmt = $this->db->prepare("INSERT INTO `scores` (`id`, `player_id`, `game_id`, `round`, `score`)
+        $scoreStmt = $this->db->prepare("INSERT INTO `scores` (`id`, `player_id`, `pot_id`, `score`, `bued`)
             VALUES
-                (1, 5, 2, 1, -20),
-                (2, 6, 2, 1, -20),
-                (3, 7, 2, 1, -20),
-                (4, 8, 2, 1, 60),
-                (5, 1, 3, 1, 60),
-                (6, 2, 3, 1, -20),
-                (7, 3, 3, 1, -20),
-                (8, 4, 3, 1, -20),
-                (9, 1, 3, 2, 120),
-                (10, 2, 3, 2, -40),
-                (11, 3, 3, 2, -40),
-                (12, 4, 3, 2, -40);
+                (1, 5, 1, -20, 0),
+                (2, 6, 1, -20, 0),
+                (3, 7, 1, -20, 1),
+                (4, 8, 1, 60, 1),
+                (5, 1, 2, 60, 0),
+                (6, 2, 2, -20, 0),
+                (7, 3, 2, -100, 1),
+                (8, 4, 2, -100, 1),
+                (9, 1, 3, 280, 0),
+                (10, 2, 3, -40, 0),
+                (11, 3, 3, -120, 0),
+                (12, 4, 3, -360, 1);
             ");
         $scoreStmt->execute();
-    }
-
-    private function seedStats(): void
-    {
-        $statStmt = $this->db->prepare("INSERT INTO `player_stats` (`id`, `wins`, `bues`, `compuls_wins`, `compuls_bues`, `wins_with_deal`, `bues_with_deal`, `player_id`, `game_id`)
-            VALUES
-                (1, 0, 0, 0, 0, 0, 0, 1, 1),
-                (2, 0, 0, 0, 0, 0, 0, 2, 1),
-                (3, 0, 0, 0, 0, 0, 0, 3, 1),
-                (4, 0, 0, 0, 0, 0, 0, 4, 1),
-                (13, 0, 0, 0, 0, 0, 0, 5, 2),
-                (14, 0, 0, 0, 0, 0, 0, 6, 2),
-                (15, 0, 0, 0, 0, 0, 0, 7, 2),
-                (16, 1, 0, 1, 0, 0, 0, 8, 2),
-                (17, 2, 0, 1, 0, 0, 0, 1, 3),
-                (18, 0, 0, 0, 0, 0, 0, 2, 3),
-                (19, 0, 0, 0, 0, 0, 0, 3, 3),
-                (20, 0, 0, 0, 0, 0, 0, 4, 3);
-            ");
-        $statStmt->execute();
     }
 
     private function seedPlayerGame(): void
