@@ -115,8 +115,8 @@ class PlayerRepository {
 
     public function linkPlayersToGame(array $players, int $gameId): bool
     {
-        foreach ($players as $playerId) {
-            $this->linkPlayerToGame($playerId, $gameId);
+        foreach ($players as $player) {
+            $this->linkPlayerToGame($player['id'], $gameId);
         }
 
         return true;

@@ -18,13 +18,8 @@ class ScoreListener {
     public function onRoundFinished(RoundCompletedEvent $event) {
         // TODO: Make PotId not 0
         $this->scoreRepository->addPlayersScores(
-            $event->gameId,
-            $event->round,
             0,
             $event->playerScores(),
-            $event->dealerId,
-            $event->isCompulsRound(),
-            $event->winnerId,
             $event->buedIds
         );
     }

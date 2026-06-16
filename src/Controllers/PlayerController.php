@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Classes\StatusCode;
+use App\DTOs\PlayerStatsDTO;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StatsRepository;
 use Psr\Http\Message\ServerRequestInterface;
@@ -34,11 +35,14 @@ class PlayerController
 
     public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-        $playerStats = $this->statsRepository->getPlayerStats((int) $args['playerId']);
+        $playerStats = PlayerStatsDTO::from(
+            $this->statsRepository->getPlayerStats((int) $args['playerId'])
+        );
+
         $responseBody = [
             'message' => 'Successfully retrieved from db.',
             'status' => StatusCode::HTTP_OK,
-            'data' => $playerStats
+            'data' => $playerStats->toArray()
         ];
         return $response->withJson($responseBody);
     }

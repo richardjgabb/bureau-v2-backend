@@ -103,22 +103,22 @@ class StatsRepository {
     {
         $query = $this->db->prepare(
             "SELECT
-                        SUM(CASE WHEN p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Pots Won`,
-                        SUM(s.bued) AS `Bues`,
-                        SUM(CASE WHEN p.is_compuls = 1 AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Compuls pots won`,
-                        SUM(CASE WHEN p.is_compuls = 1 AND s.bued = 1 THEN 1 ELSE 0 END) AS `Bues on compuls`,
-                        SUM(CASE WHEN p.dealer_id = s.player_id THEN 1 ELSE 0 END) AS `Hands dealt`,
-                        SUM(CASE WHEN p.dealer_id = s.player_id AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Pots won with deal`,
-                        SUM(CASE WHEN p.dealer_id = s.player_id AND s.bued = 1 THEN 1 ELSE 0 END) AS `Bues with deal`,
-                        COUNT(*) AS `Hands Played`,
-                        (SELECT COUNT(DISTINCT game_id) FROM player_game WHERE player_id = :player_id) AS `Games Played`,
+                        SUM(CASE WHEN p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `wins`,
+                        SUM(s.bued) AS `bues`,
+                        SUM(CASE WHEN p.is_compuls = 1 AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `compuls_wins`,
+                        SUM(CASE WHEN p.is_compuls = 1 AND s.bued = 1 THEN 1 ELSE 0 END) AS `compuls_bues`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id THEN 1 ELSE 0 END) AS `hands_dealt`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `wins_with_deal`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id AND s.bued = 1 THEN 1 ELSE 0 END) AS `bues_with_deal`,
+                        COUNT(*) AS `hands_played`,
+                        (SELECT COUNT(DISTINCT game_id) FROM player_game WHERE player_id = :player_id) AS `games_played`,
                         (
-                            SELECT CONCAT('£', FORMAT(MAX(p2.pot) / 100, 2))
+                            SELECT MAX(p2.pot)
                             FROM pots p2
                             WHERE p2.winner_id = :player_id
-                        ) AS `Highest Pot Won`,
+                        ) AS `biggest_win`,
                         (
-                            SELECT CONCAT('£', FORMAT(SUM(x.top_score) / 100, 2))
+                            SELECT SUM(x.top_score)
                             FROM (
                                 SELECT MAX(s2.score) AS top_score
                                 FROM scores s2
@@ -126,12 +126,12 @@ class StatsRepository {
                                 WHERE s2.player_id = :player_id
                                 GROUP BY p2.game_id
                             ) x
-                        ) AS `Total Score`,
+                        ) AS `total_score`,
                         (
                             SELECT pl.name
                             FROM players pl
                             WHERE pl.id = :player_id
-                        ) AS `Player Name`
+                        ) AS `player_name`
 
                     FROM scores s
                     JOIN pots p ON p.id = s.pot_id

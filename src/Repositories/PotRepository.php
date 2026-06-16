@@ -38,10 +38,10 @@ class PotRepository {
         return $query->fetchAll();
     }
 
-    public function addNewPot(int $gameId, int $round, ?int $winnerId, int $potSize, bool $isCompuls, ?int $dealerId): bool
+    public function addNewPot(int $gameId, int $round, ?int $winnerId, int $potSize, int $isCompuls, ?int $dealerId): int
     {
         $query = $this->db->prepare("
-            INSERT INTO `pots` (`game_id`, `round`, `pot`, `pot_winner`, `is_compuls`, `dealer_id`)
+            INSERT INTO `pots` (`game_id`, `round`, `pot`, `winner_id`, `is_compuls`, `dealer_id`)
                VALUES (:game_id, :round, :pot, :winner_id, :is_compuls, :dealer_id);
         ");
 
@@ -51,6 +51,8 @@ class PotRepository {
         $query->bindParam(":winner_id", $winnerId);
         $query->bindParam(":is_compuls", $isCompuls);
         $query->bindParam(":dealer_id", $dealerId);
-        return $query->execute();
+        $query->execute();
+
+        return (int) $this->db->lastInsertId();
     }
 }

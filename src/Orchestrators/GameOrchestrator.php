@@ -9,7 +9,6 @@ use App\Exceptions\GameNotFoundException;
 use App\Objects\GameObject;
 use App\Repositories\GameRepository;
 use App\Repositories\PlayerRepository;
-use App\Repositories\PlayerStatsRepository;
 use App\Repositories\PotRepository;
 use App\Repositories\ScoreRepository;
 use App\Services\GameFormatterService;
@@ -71,7 +70,8 @@ class GameOrchestrator
         $gameId = $this->gameRepository->createNewGame($data['gameName'], (int) $data['buyIn']);
 
         $this->playerRepository->linkPlayersToGame($players ?? $existingPlayers, $gameId);
-        $this->scoreRepository->initiateScoresForAllPlayers($players ?? $existingPlayers, $gameId);
+        $potId = $this->potRepository->addNewPot($gameId, 0, null, 0, 0, null);
+        $this->scoreRepository->initiateScoresForAllPlayers($players ?? $existingPlayers, $potId);
 
         return $this->getGameData((string) $gameId);
     }

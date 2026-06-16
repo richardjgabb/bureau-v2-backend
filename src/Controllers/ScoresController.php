@@ -44,11 +44,14 @@ class ScoresController
         $gameId = (int) $args['gameId'];
 
         try {
-            $data = new StoreRoundObject($request->getParsedBody());
+            $roundData = new StoreRoundObject($request->getParsedBody());
 
+            $this->repository->storeRound($roundData);
+
+            // TODO: Delete once above function is complete
             $this->eventDispatcher->dispatch(
                 new RoundCompletedEvent(
-                    $data
+                    $roundData
                 ),
                 RoundCompletedEvent::NAME
             );

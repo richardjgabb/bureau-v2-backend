@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\ScoreModel;
+use App\Objects\StoreRoundObject;
 use Exception;
 use PDO;
 
@@ -67,30 +68,25 @@ class ScoreRepository {
         }
     }
 
-    private function insertNewScore(int $gameId, int $round, int $playerId, int $potId, int $score, bool $isDealer, bool $isCompuls, bool $win, bool $bued): bool
+    private function insertNewScore(int $playerId, int $potId, int $score, int $bued = 0): bool
     {
         $query = $this->db->prepare("
-            INSERT INTO `scores` (`game_id`, `round`, `player_id`, `pot_id`, `score`, `isDealer`, `isCompuls`, `win`, `bued`)
-                 VALUES (:game_id, :round, :player_id, :score, :isDealer, :isCompuls, :win, :bued)
+            INSERT INTO `scores` (`player_id`, `pot_id`, `score`, `bued`)
+                 VALUES (:player_id, :pot_id, :score, :bued)
         ");
 
-        $query->bindParam(":game_id", $gameId);
-        $query->bindParam(":round", $round);
         $query->bindParam(":player_id", $playerId);
         $query->bindParam(":pot_id", $potId);
         $query->bindParam(":score", $score);
-        $query->bindParam(":isDealer", $isDealer);
-        $query->bindParam(":isCompuls", $isCompuls);
-        $query->bindParam(":win", $win);
         $query->bindParam(":bued", $bued);
 
         return $query->execute();
     }
 
-    public function addPlayersScores(int $gameId, int $round, $potId, array $scores, int $dealerId, bool $isCompuls, int $winnerId, array $buedIds): bool
+    public function addPlayersScores(int $potId, array $scores, array $buedIds): bool
     {
         foreach ($scores as $playerId => $score) {
-            if (!$this->insertNewScore($gameId, $round, $playerId, $potId, $score, $playerId === $dealerId, $isCompuls, $playerId === $winnerId, in_array($playerId, $buedIds))) {
+            if (!$this->insertNewScore($playerId, $potId, $score, in_array($playerId, $buedIds) ? 1 : 0)) {
                 return false;
             }
         }
@@ -118,11 +114,11 @@ class ScoreRepository {
         return $query->fetchAll();
     }
 
-    public function initiateScoresForAllPlayers(array $players, int $gameId): bool
+    public function initiateScoresForAllPlayers(array $players, int $potId): bool
     {
         foreach ($players as $player) {
             //TODO: Make Pot Id not 0
-            if (!$this->insertNewScore($gameId, 0, $player['id'], 0, $player['score'], false, false, false, false)) {
+            if (!$this->insertNewScore($player['id'], $potId, $player['score'], 0)) {
                 return false;
             }
         }
@@ -130,14 +126,14 @@ class ScoreRepository {
         return true;
     }
 
-    public function updatePlayersScores(int $gameId, array $players, int $round): bool
+    public function updatePlayersScores(int $gameId, array $players): bool
     {
         foreach ($players as $player => $score) {
             $latestScore = $this->getLatestScoreForPlayer($gameId, $player);
 
             if (!$latestScore) {
                 //TODO: Make Pot Id not 0
-                $this->insertNewScore($gameId, $round, $player, 0, $score, false, false, false, false);
+                $this->insertNewScore( $player, 0, $score, 0);
                 continue;
             }
 
@@ -184,5 +180,10 @@ class ScoreRepository {
         $query->bindParam(":score", $score);
 
         return $query->execute();
+    }
+
+    public function storeRound(StoreRoundObject $roundData): bool
+    {
+        return true;
     }
 }

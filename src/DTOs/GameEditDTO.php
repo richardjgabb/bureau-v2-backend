@@ -21,7 +21,6 @@ class GameEditDTO
         $this->round = $data['round'];
     }
 
-
     public static function from(int $id, array $data): self
     {
         return new self($id, $data);

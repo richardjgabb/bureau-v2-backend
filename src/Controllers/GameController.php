@@ -13,7 +13,6 @@ use Slim\Http\Interfaces\ResponseInterface;
 
 class GameController
 {
-    // TODO: FIX DATA TO MATCH DB REFACTOR
     private GameOrchestrator $orchestrator;
 
     public function __construct(GameOrchestrator $orchestrator)
