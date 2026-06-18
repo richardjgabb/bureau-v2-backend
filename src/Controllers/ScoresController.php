@@ -68,6 +68,7 @@ class ScoresController
         $gameId = (int) $args['gameId'];
         $round = (int) $args['round'];
 
+        //TODO: FIX UNDO
         try {
             $this->repository->deleteRound($gameId, $round);
 
