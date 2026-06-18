@@ -181,9 +181,4 @@ class ScoreRepository {
 
         return $query->execute();
     }
-
-    public function storeRound(StoreRoundObject $roundData): bool
-    {
-        return true;
-    }
 }

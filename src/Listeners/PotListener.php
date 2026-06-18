@@ -21,9 +21,8 @@ class PotListener {
             $event->round,
             $event->winnerId,
             $event->currentPotSize,
-            $event->isCompulsRound(),
+            $event->isCompulsRound() ? 1 : 0,
             $event->dealerId,
-            $event->amountOfBues()
         );
     }
 }

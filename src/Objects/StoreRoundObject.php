@@ -28,4 +28,42 @@ class StoreRoundObject
         $this->players = $roundData['players'] ?? [];
         $this->currentPotSize = (int) $roundData['currentPotSize'];
     }
+
+    private function amountOfPlayers(): int {
+        return count($this->players);
+    }
+
+    public function isSplit(): bool {
+        return $this->winnerId === null;
+    }
+
+    public function hasNoBues(): bool {
+        return $this->amountOfBues() === 0;
+    }
+
+    public function amountOfBues(): int {
+        return count($this->buedIds);
+    }
+
+    private function livePlayers(): array {
+        return array_values(
+            array_filter($this->players, fn($player) => $player['isLive'] ?? true)
+        );
+    }
+
+    public function playerScores(): array {
+        return array_column($this->livePlayers(), 'current_score', 'id');
+    }
+
+    public function compulsPotSize(): int {
+        return $this->amountOfPlayers() * $this->buyIn;
+    }
+
+    public function isCompulsRound(): bool {
+        return $this->currentPotSize <= $this->compulsPotSize();
+    }
+
+    public function calculateNewPotSize(int $potSize): int {
+        return $potSize + $this->compulsPotSize() + ($this->amountOfBues() * $potSize);
+    }
 }

@@ -9,6 +9,7 @@ use App\Events\RoundCompletedEvent;
 use App\Objects\StoreRoundObject;
 use App\Repositories\ScoreRepository;
 use App\Services\ScoreFormatterService;
+use App\Services\ScoreService;
 use Exception;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Http\Interfaces\ResponseInterface;
@@ -19,12 +20,14 @@ class ScoresController
     private ScoreRepository $repository;
     private ScoreFormatterService $formatter;
     private EventDispatcher $eventDispatcher;
+    private ScoreService $service;
 
-    public function __construct(ScoreRepository $repository, ScoreFormatterService $formatter, EventDispatcher $eventDispatcher)
+    public function __construct(ScoreRepository $repository, ScoreFormatterService $formatter, EventDispatcher $eventDispatcher, ScoreService $service)
     {
         $this->repository = $repository;
         $this->formatter = $formatter;
         $this->eventDispatcher = $eventDispatcher;
+        $this->service = $service;
     }
 
     public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
@@ -46,15 +49,7 @@ class ScoresController
         try {
             $roundData = new StoreRoundObject($request->getParsedBody());
 
-            $this->repository->storeRound($roundData);
-
-            // TODO: Delete once above function is complete
-            $this->eventDispatcher->dispatch(
-                new RoundCompletedEvent(
-                    $roundData
-                ),
-                RoundCompletedEvent::NAME
-            );
+            $this->service->storeRound($roundData);
 
             $responseBody = [
                 'message' => 'Successfully stored in the db.',
