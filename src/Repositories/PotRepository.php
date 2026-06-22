@@ -55,4 +55,19 @@ class PotRepository {
 
         return (int) $this->db->lastInsertId();
     }
+
+    public function getLatestPotForGame(int $gameId)
+    {
+        $query = $this->db->prepare("
+            SELECT id
+              FROM `pots`
+             WHERE `game_id` = :game_id
+          ORDER BY `round` DESC
+             LIMIT 1
+        ");
+
+        $query->bindParam(":game_id", $gameId);
+        $query->execute();
+        return $query->fetch();
+    }
 }

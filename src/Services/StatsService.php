@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTOs\GameStatsDTO;
+use App\DTOs\GameStatsGameDTO;
+use App\DTOs\GameStatsPlayerDTO;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StatsRepository;
 
@@ -25,10 +27,10 @@ class StatsService
 
         $playerStats = [];
         foreach ($playerIds as $playerId) {
-            $playerStats[$playerId] = $this->statsRepository->getPlayerStatsForGame($playerId, $gameId);
+            $playerStats[$playerId] = GameStatsPlayerDTO::from($this->statsRepository->getPlayerStatsForGame($playerId, $gameId))->toArray();
         }
 
-        $gameStats = $this->statsRepository->getGameStats($gameId);
+        $gameStats = GameStatsGameDTO::from($this->statsRepository->getGameStats($gameId));
 
         return new GameStatsDTO($gameStats, $playerStats);
     }

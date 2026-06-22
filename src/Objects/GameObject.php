@@ -27,13 +27,6 @@ class GameObject implements JsonSerializable
 
     public function jsonSerialize(): array
     {
-        $latestPot = $this->pots[count($this->pots) - 1] ?? null;
-        if (!$latestPot || ($latestPot && $latestPot->amountOfBues === 0 && $latestPot->pot_winner !== null)) {
-            $currentPotSize = 0;
-        } else {
-            $currentPotSize = $latestPot->pot * $latestPot->amountOfBues;
-        }
-
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -41,7 +34,17 @@ class GameObject implements JsonSerializable
             'round' => $this->round,
             'players' => $this->players,
             'pots' => $this->pots,
-            'currentPotSize' => $currentPotSize
+            'currentPotSize' => $this->computeLatestPotSize(),
         ];
+    }
+
+    private function computeLatestPotSize(): int
+    {
+        $latestPot = $this->pots[count($this->pots) - 1] ?? null;
+        if (!$latestPot || ($latestPot && $latestPot->amountOfBues === 0 && $latestPot->pot_winner !== null)) {
+            return 0;
+        } else {
+            return $this->pots[count($this->pots) - 1]->pot;
+        }
     }
 }

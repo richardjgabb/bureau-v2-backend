@@ -12,6 +12,7 @@ use App\Repositories\PlayerRepository;
 use App\Repositories\PotRepository;
 use App\Repositories\ScoreRepository;
 use App\Services\GameFormatterService;
+use App\Services\ScoreService;
 
 class GameOrchestrator
 {
@@ -20,19 +21,22 @@ class GameOrchestrator
     private GameFormatterService $formatter;
     private PotRepository $potRepository;
     private ScoreRepository $scoreRepository;
+    private ScoreService $scoreService;
 
     public function __construct(
         GameRepository $gameRepository,
         PlayerRepository $playerRepository,
         GameFormatterService $formatter,
         PotRepository $potRepository,
-        ScoreRepository $scoreRepository
+        ScoreRepository $scoreRepository,
+        ScoreService $scoreService
     ) {
         $this->gameRepository = $gameRepository;
         $this->playerRepository = $playerRepository;
         $this->formatter = $formatter;
         $this->potRepository = $potRepository;
         $this->scoreRepository = $scoreRepository;
+        $this->scoreService = $scoreService;
     }
 
     public function getGameData(string $gameId): GameObject
@@ -90,7 +94,7 @@ class GameOrchestrator
 
         $game = $this->gameRepository->updateGame($data->id, $data->name, $data->buyIn);
         $players = $this->playerRepository->updatePlayersForGame( $data->id, $newPlayers, $playersToRemove);
-        $scores = $this->scoreRepository->updatePlayersScores($data->id, $data->players, $data->round);
+        $scores = $this->scoreService->updatePlayersScores($data->id, $data->players, $data->round);
         return true;
     }
 }

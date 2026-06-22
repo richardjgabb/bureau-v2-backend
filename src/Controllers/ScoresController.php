@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Classes\StatusCode;
-use App\Events\RoundCompletedEvent;
 use App\Objects\StoreRoundObject;
 use App\Repositories\ScoreRepository;
 use App\Services\ScoreFormatterService;
@@ -68,7 +67,6 @@ class ScoresController
         $gameId = (int) $args['gameId'];
         $round = (int) $args['round'];
 
-        //TODO: FIX UNDO
         try {
             $this->repository->deleteRound($gameId, $round);
 
@@ -79,7 +77,7 @@ class ScoresController
 
             return $response->withJson($responseBody);
         } catch (Exception $e) {
-            return $response->withStatus(StatusCode::HTTP_BAD_REQUEST);
+            return $response->withJson(['message' => $e->getMessage()])->withStatus(StatusCode::HTTP_BAD_REQUEST);
         }
     }
 }

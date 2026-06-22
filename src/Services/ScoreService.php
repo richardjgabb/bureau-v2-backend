@@ -50,4 +50,28 @@ class ScoreService
 
         return true;
     }
+
+    public function updatePlayersScores(int $gameId, array $players): bool
+    {
+        $latestPot = $this->potRepository->getLatestPotForGame($gameId);
+
+        if (!$latestPot) {
+            $latestPot = 0;
+        }
+
+        foreach ($players as $player => $score) {
+            $latestScore = $this->scoreRepository->getLatestScoreForPlayer($gameId, $player);
+
+            if (!$latestScore) {
+                $this->scoreRepository->insertNewScore( $player, $latestPot, $score, 0);
+                continue;
+            }
+
+            if (!$this->scoreRepository->updatePlayerScoreForGame($gameId, $player, $score)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

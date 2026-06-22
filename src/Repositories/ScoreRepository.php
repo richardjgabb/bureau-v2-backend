@@ -39,9 +39,10 @@ class ScoreRepository {
             $this->db->beginTransaction();
 
             $query1 = $this->db->prepare(
-                "DELETE FROM `scores`
-                              WHERE `game_id` = :game_id
-                                AND `round` = :round"
+                "DELETE `scores` FROM `scores`
+                         INNER JOIN `pots` ON `scores`.`pot_id` = `pots`.`id`
+                              WHERE pots.`game_id` = :game_id
+                                AND pots.`round` = :round"
             );
             $query1->execute([
                 ":game_id" => $gameId,
@@ -59,16 +60,16 @@ class ScoreRepository {
             ]);
 
             return $this->db->commit();
-        } catch (Exception) {
+        } catch (Exception $e) {
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
             }
 
-            throw new Exception("Failed to delete round");
+            throw new Exception($e->getMessage());
         }
     }
 
-    private function insertNewScore(int $playerId, int $potId, int $score, int $bued = 0): bool
+    public function insertNewScore(int $playerId, int $potId, int $score, int $bued = 0): bool
     {
         $query = $this->db->prepare("
             INSERT INTO `scores` (`player_id`, `pot_id`, `score`, `bued`)
@@ -117,7 +118,6 @@ class ScoreRepository {
     public function initiateScoresForAllPlayers(array $players, int $potId): bool
     {
         foreach ($players as $player) {
-            //TODO: Make Pot Id not 0
             if (!$this->insertNewScore($player['id'], $potId, $player['score'], 0)) {
                 return false;
             }
@@ -126,33 +126,15 @@ class ScoreRepository {
         return true;
     }
 
-    public function updatePlayersScores(int $gameId, array $players): bool
-    {
-        foreach ($players as $player => $score) {
-            $latestScore = $this->getLatestScoreForPlayer($gameId, $player);
-
-            if (!$latestScore) {
-                //TODO: Make Pot Id not 0
-                $this->insertNewScore( $player, 0, $score, 0);
-                continue;
-            }
-
-            if (!$this->updatePlayerScoreForGame($gameId, $player, $score)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function getLatestScoreForPlayer(int $gameId, int $playerId)
+    public function getLatestScoreForPlayer(int $gameId, int $playerId)
     {
         $query = $this->db->prepare("
             SELECT `scores`.*
               FROM `scores`
-             WHERE `scores`.`game_id` = :game_id
+        INNER JOIN `pots` ON `scores`.`pot_id` = `pots`.`id`
+             WHERE `pots`.`game_id` = :game_id
                AND `scores`.`player_id` = :player_id
-          ORDER BY `scores`.`round` DESC
+          ORDER BY `pots`.`round` DESC
              LIMIT 1
         ");
 
@@ -162,17 +144,24 @@ class ScoreRepository {
         return $query->fetch();
     }
 
-    private function updatePlayerScoreForGame(int $gameId, int $playerId, int $score): bool
+    public function updatePlayerScoreForGame(int $gameId, int $playerId, int $score): bool
     {
         $query = $this->db->prepare("
             UPDATE `scores` s
+        INNER JOIN `pots` pots ON s.`pot_id` = pots.`id`
                SET s.`score` = :score
-             WHERE s.`game_id` = :game_id
-               AND s.`player_id` = :player_id;
-               AND s.`round` = (SELECT MAX(`round`)
-                                  FROM `scores`
-                                 WHERE `game_id` = :game_id
-                                   AND `player_id` = :player_id);
+             WHERE pots.`game_id` = :game_id
+               AND s.`player_id` = :player_id
+               AND pots.`round` = (
+                   SELECT max_round
+                     FROM (
+                          SELECT MAX(p.`round`) AS max_round
+                            FROM `pots` p
+                      INNER JOIN `scores` s2 ON p.`id` = s2.`pot_id`
+                           WHERE p.`game_id` = :game_id
+                             AND s2.`player_id` = :player_id
+                          ) AS temp_table
+                   );
         ");
 
         $query->bindParam(":game_id", $gameId);

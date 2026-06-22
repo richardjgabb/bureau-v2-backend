@@ -16,7 +16,6 @@ class ScoreListener {
         $this->scoreRepository = $scoreRepository;
     }
     public function onRoundFinished(RoundCompletedEvent $event) {
-        // TODO: Make PotId not 0
         $this->scoreRepository->addPlayersScores(
             0,
             $event->playerScores(),

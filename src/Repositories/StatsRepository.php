@@ -48,15 +48,15 @@ class StatsRepository {
     {
         $query = $this->db->prepare(
             "SELECT
-                        COALESCE(MAX(p.round), 0) AS `Hands Played`,
-                        COALESCE(MAX(pg.total_players), 0) AS `Total Players`,
-                        CONCAT('£', FORMAT(COALESCE(SUM(p.pot), 0) / 100, 2)) AS `Total Pot`,
-                        CONCAT('£', FORMAT(COALESCE(AVG(p.pot), 0) / 100, 2)) AS `Average Pot`,
-                        COUNT(p.winner_id) AS `Pots Won`,
-                        CONCAT('£', FORMAT(COALESCE(MAX(p.pot), 0) / 100, 2)) AS `Biggest Pot`,
-                        COALESCE(SUM(s.total_bues), 0) AS `Total Bues`,
-                        COALESCE(SUM(p.is_compuls), 0) AS `Compulsory Pots`,
-                        COALESCE(SUM(CASE WHEN p.is_compuls = 1 THEN s.total_bues ELSE 0 END), 0) AS `Compulsory Bues`
+                        COALESCE(MAX(p.round), 0) AS `hands_played`,
+                        COALESCE(MAX(pg.total_players), 0) AS `total_players`,
+                        CONCAT('£', FORMAT(COALESCE(SUM(p.pot), 0) / 100, 2)) AS `total_pot`,
+                        CONCAT('£', FORMAT(COALESCE(AVG(p.pot), 0) / 100, 2)) AS `average_pot`,
+                        COUNT(p.winner_id) AS `wins`,
+                        CONCAT('£', FORMAT(COALESCE(MAX(p.pot), 0) / 100, 2)) AS `biggest_pot`,
+                        COALESCE(SUM(s.total_bues), 0) AS `bues`,
+                        COALESCE(SUM(p.is_compuls), 0) AS `compuls_pots`,
+                        COALESCE(SUM(CASE WHEN p.is_compuls = 1 THEN s.total_bues ELSE 0 END), 0) AS `compuls_bues`
                     FROM pots p
                     CROSS JOIN (
                         SELECT COUNT(id) AS total_players
@@ -79,13 +79,13 @@ class StatsRepository {
     {
         $query = $this->db->prepare(
             "SELECT
-                        SUM(CASE WHEN p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Pots won`,
-                        SUM(s.bued) AS `Bues`,
-                        SUM(CASE WHEN p.is_compuls = 1 AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Compuls pots won`,
-                        SUM(CASE WHEN p.is_compuls = 1 AND s.bued = 1 THEN 1 ELSE 0 END) AS `Bues on compuls`,
-                        SUM(CASE WHEN p.dealer_id = s.player_id THEN 1 ELSE 0 END) AS `Hands dealt`,
-                        SUM(CASE WHEN p.dealer_id = s.player_id AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `Pots won with deal`,
-                        SUM(CASE WHEN p.dealer_id = s.player_id AND s.bued = 1 THEN 1 ELSE 0 END) AS `Bues with deal`
+                        SUM(CASE WHEN p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `wins`,
+                        SUM(s.bued) AS `bues`,
+                        SUM(CASE WHEN p.is_compuls = 1 AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `compuls wins`,
+                        SUM(CASE WHEN p.is_compuls = 1 AND s.bued = 1 THEN 1 ELSE 0 END) AS `compuls_bues`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id THEN 1 ELSE 0 END) AS `hands_dealt`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `wins_with_deal`,
+                        SUM(CASE WHEN p.dealer_id = s.player_id AND s.bued = 1 THEN 1 ELSE 0 END) AS `bues_with_deal`
 
                     FROM scores s
                     INNER JOIN pots p ON s.pot_id = p.id

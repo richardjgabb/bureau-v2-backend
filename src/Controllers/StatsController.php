@@ -40,7 +40,7 @@ class StatsController
             $responseBody = [
                 'message' => 'Successfully retrieved from db.',
                 'status' => StatusCode::HTTP_OK,
-                'data' => $stats
+                'data' => $stats->serialize()
             ];
         } catch (Exception $e) {
             $responseBody = [
