@@ -20,6 +20,7 @@ return function (App $app) {
 
         $app->group('/players', function (RouteCollectorProxy $app) {
             $app->get('', [PlayerController::class, 'index']);
+            $app->post('', [PlayerController::class, 'store']);
             $app->get('{playerId}/stats/{gameId}', PlayerStatsController::class);
             $app->get('/{playerId}', [PlayerController::class, 'show']);
         });

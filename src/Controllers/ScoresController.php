@@ -77,7 +77,9 @@ class ScoresController
 
             return $response->withJson($responseBody);
         } catch (Exception $e) {
-            return $response->withJson(['message' => $e->getMessage()])->withStatus(StatusCode::HTTP_BAD_REQUEST);
+            return $response->withJson(
+                ['message' => 'Unable to delete latest round']
+            )->withStatus(StatusCode::HTTP_BAD_REQUEST);
         }
     }
 }

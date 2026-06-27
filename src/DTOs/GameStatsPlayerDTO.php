@@ -16,13 +16,13 @@ class GameStatsPlayerDTO
 
     public function __construct(array $data)
     {
-        $this->wins = $data['wins'] ?? 0;
-        $this->bues = $data['bues'] ?? 0;
-        $this->compuls_wins = $data['compuls_wins'] ?? 0;
-        $this->compuls_bues = $data['compuls_bues'] ?? 0;
-        $this->hands_dealt = $data['hands_dealt'] ?? 0;
-        $this->wins_with_deal = $data['wins_with_deal'] ?? 0;
-        $this->bues_with_deal = $data['bues_with_deal'] ?? 0;
+        $this->wins = (int) $data['wins'] ?? 0;
+        $this->bues = (int) $data['bues'] ?? 0;
+        $this->compuls_wins = (int) $data['compuls_wins'] ?? 0;
+        $this->compuls_bues = (int) $data['compuls_bues'] ?? 0;
+        $this->hands_dealt = (int) $data['hands_dealt'] ?? 0;
+        $this->wins_with_deal = (int) $data['wins_with_deal'] ?? 0;
+        $this->bues_with_deal = (int) $data['bues_with_deal'] ?? 0;
     }
 
     public static function from(array $data): self

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Classes\StatusCode;
+use App\DTOs\NewPlayerrDTO;
 use App\DTOs\PlayerStatsDTO;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StatsRepository;
+use Exception;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Http\Interfaces\ResponseInterface;
 
@@ -31,6 +33,25 @@ class PlayerController
             'data' => $players
         ];
         return $response->withJson($responseBody);
+    }
+
+    public function store(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $newPlayer = NewPlayerrDTO::from($request->getParsedBody()['name']);
+
+        try {
+            $player = $this->repository->createNewPlayer($newPlayer->name);
+
+            $responseBody = [
+                'message' => 'Successfully stored in the db.',
+                'status' => StatusCode::HTTP_CREATED,
+                'data' => $player
+            ];
+
+            return $response->withJson($responseBody);
+        } catch (Exception $e) {
+            return $response->withStatus(StatusCode::HTTP_BAD_REQUEST)->withJson(['message' => 'Unable to create player']);
+        }
     }
 
     public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface

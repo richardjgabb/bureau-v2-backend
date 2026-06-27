@@ -74,7 +74,7 @@ class PlayerRepository {
         return $query->fetchAll();
     }
 
-    private function createNewPlayer(string $name): int
+    public function createNewPlayer(string $name): int
     {
         $query = $this->db->prepare("
             INSERT INTO `players` (`name`) VALUES (:name)
