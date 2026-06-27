@@ -22,7 +22,7 @@ class GameObject implements JsonSerializable
         $this->buyIn = $buyIn;
         $this->players = $players;
         $this->pots = $pots;
-        $this->round = count($pots) + 1;
+        $this->round = count($pots);
     }
 
     public function jsonSerialize(): array
