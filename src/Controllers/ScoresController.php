@@ -58,7 +58,7 @@ class ScoresController
 
             return $response->withJson($responseBody);
         } catch (Exception $e) {
-            return $response->withStatus(StatusCode::HTTP_BAD_REQUEST)->withJson(['message' => $e->getMessage()]);
+            return $response->withStatus(StatusCode::HTTP_BAD_REQUEST)->withJson(['message' => "Unable to save round"]);
         }
     }
 

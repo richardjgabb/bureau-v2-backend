@@ -25,12 +25,16 @@ class StoreRoundObject
         $this->buyIn = (int) $roundData['buyIn'];
         $this->round = (int) $roundData['round'];
         $this->buedIds = $roundData['buedIds'] ?? [];
-        $this->players = $roundData['players'] ?? [];
+        $this->players = $this->filterFrozenPlayers($roundData['players']) ?? [];
         $this->currentPotSize = (int) $roundData['currentPotSize'];
     }
 
     private function amountOfPlayers(): int {
         return count($this->players);
+    }
+
+    private function filterFrozenPlayers(array $players): array {
+        return array_filter($players, fn ($player) => !$player['isFrozen']);
     }
 
     public function isSplit(): bool {
@@ -45,14 +49,8 @@ class StoreRoundObject
         return count($this->buedIds);
     }
 
-    private function livePlayers(): array {
-        return array_values(
-            array_filter($this->players, fn($player) => $player['isLive'] ?? true)
-        );
-    }
-
     public function playerScores(): array {
-        return array_column($this->livePlayers(), 'current_score', 'id');
+        return array_column($this->players, 'current_score', 'id');
     }
 
     public function compulsPotSize(): int {

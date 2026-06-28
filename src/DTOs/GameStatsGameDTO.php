@@ -20,7 +20,7 @@ class GameStatsGameDTO
     public function __construct(array $data)
     {
         $this->hands_played = $data['hands_played'] ?? 0;
-        $this->player_count = $data['total_playerst'] ?? 0;
+        $this->player_count = $data['total_players'] ?? 0;
         $this->total_pot = $data['total_pot'] ?? "£0.00";
         $this->average_pot = $data['average_pot'] ?? "£0.00";
         $this->pots_won = $data['wins'] ?? 0;
