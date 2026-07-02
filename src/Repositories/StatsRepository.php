@@ -19,24 +19,29 @@ class StatsRepository {
     {
         $query = $this->db->prepare(
             "SELECT
-                            COUNT(p.id) AS `Total Hands`,
+                            SUM(CASE WHEN p.round > 0 THEN 1 ELSE 0 END) AS `Total Hands`,
                             (SELECT COUNT(*) FROM players) AS `Total Players`,
-                            CONCAT('£', FORMAT(SUM(p.pot)/100, 2)) AS `Total Pot`,
-                            CONCAT('£', FORMAT(AVG(p.pot)/100, 2)) AS `Average Pot`,
+                            CONCAT('£', FORMAT(SUM(p.pot) / 100, 2)) AS `Total Pot`,
+                            CONCAT('£', FORMAT(AVG(CASE WHEN p.round > 0 THEN p.pot ELSE NULL END) / 100, 2)) AS `Average Pot`,
                             COUNT(p.winner_id) AS `Pots Won`,
-                            CONCAT('£', FORMAT(MAX(p.pot)/100, 2)) AS `Biggest Pot`,
+                            CONCAT('£', FORMAT(MAX(p.pot) / 100, 2)) AS `Biggest Pot`,
                             SUM(p.is_compuls) AS `Compulsory Pots`,
-
-                            -- Using MAX() to satisfy the only_full_group_by restriction
+                            CONCAT(
+                                FORMAT(
+                                    100 * SUM(CASE WHEN p.dealer_id = p.winner_id THEN 1 ELSE 0 END) / COUNT(*),
+                                    0
+                                ),
+                                '%'
+                            ) AS `Pots won with deal`,
                             MAX(s.total_bues) AS `Total Bues`,
                             MAX(s.comp_bues) AS `Compulsory Bues`
-                        FROM `pots` p
+                        FROM pots p
                         CROSS JOIN (
                             SELECT
-                                SUM(bued) AS total_bues,
-                                SUM(scores.bued * p_sub.is_compuls) AS comp_bues
-                            FROM `scores`
-                            INNER JOIN `pots` p_sub ON scores.pot_id = p_sub.id
+                                SUM(s.bued) AS total_bues,
+                                SUM(s.bued * p2.is_compuls) AS comp_bues
+                            FROM scores s
+                            JOIN pots p2 ON s.pot_id = p2.id
                         ) s;
         ");
 
@@ -110,13 +115,21 @@ class StatsRepository {
                         SUM(CASE WHEN p.dealer_id = s.player_id THEN 1 ELSE 0 END) AS `hands_dealt`,
                         SUM(CASE WHEN p.dealer_id = s.player_id AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `wins_with_deal`,
                         SUM(CASE WHEN p.dealer_id = s.player_id AND s.bued = 1 THEN 1 ELSE 0 END) AS `bues_with_deal`,
-                        COUNT(*) AS `hands_played`,
+                        SUM(CASE WHEN p.round > 0 THEN 1 ELSE 0 END) AS `hands_played`,
                         (SELECT COUNT(DISTINCT game_id) FROM player_game WHERE player_id = :player_id) AS `games_played`,
                         (
                             SELECT MAX(p2.pot)
                             FROM pots p2
                             WHERE p2.winner_id = :player_id
                         ) AS `biggest_win`,
+                        (
+                            SELECT MAX(p3.pot)
+                            FROM pots p3
+                            JOIN scores s3 ON s3.pot_id = p3.id
+                            WHERE s3.bued = 1
+                              AND s3.player_id = :player_id
+
+                        ) AS `biggest_bue`,
                         (
                             SELECT SUM(x.top_score)
                             FROM (

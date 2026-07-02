@@ -17,6 +17,7 @@ class PlayerStatsDTO
     public int $hands_played;
     public int $games_played;
     public string $biggest_win;
+    public string $biggest_bue;
     public string $total_score;
 
     public function __construct(array $data)
@@ -32,6 +33,7 @@ class PlayerStatsDTO
         $this->hands_played = (int) $data['hands_played'] ?? 0;
         $this->games_played = (int) $data['games_played'] ?? 0;
         $this->biggest_win = $data['biggest_win'] ? '£' . number_format($data['biggest_win'] / 100, 2) : '£0.00';
+        $this->biggest_bue = $data['biggest_bue'] ? '£' . number_format($data['biggest_bue'] / 100, 2) : '£0.00';
         $this->total_score = $data['total_score'] ? '£' . number_format($data['total_score'] / 100, 2) : '£0.00';
     }
 
@@ -54,6 +56,7 @@ class PlayerStatsDTO
             'Bues with deal' => $this->bues_with_deal,
             'Hands dealt' => $this->hands_dealt,
             'Biggest win' => $this->biggest_win,
+            'Biggest bue' => $this->biggest_bue,
             'Total score' => $this->total_score
         ];
     }
