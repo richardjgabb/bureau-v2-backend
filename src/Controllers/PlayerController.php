@@ -26,13 +26,17 @@ class PlayerController
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $players = $this->repository->getAllPlayers();
-        $responseBody = [
-            'message' => 'Successfully retrieved from db.',
-            'status' => StatusCode::HTTP_OK,
-            'data' => $players
-        ];
-        return $response->withJson($responseBody);
+        try {
+            $players = $this->repository->getAllPlayers();
+            $responseBody = [
+                'message' => 'Successfully retrieved from db.',
+                'status' => StatusCode::HTTP_OK,
+                'data' => $players
+            ];
+            return $response->withJson($responseBody);
+        } catch (Exception) {
+            return $response->withStatus(StatusCode::HTTP_BAD_REQUEST)->withJson(['message' => 'Unable to retrieve players']);
+        }
     }
 
     public function store(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

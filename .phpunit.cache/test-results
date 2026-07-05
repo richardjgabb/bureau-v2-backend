@@ -1,0 +1,1 @@
+{"version":2,"defects":{"App\\Test\\ExampleRouteTest::testEndpoint":8,"App\\Test\\PlayersRouteTest::testGetPlayersSuccess":7},"times":{"App\\Test\\ExampleRouteTest::testEndpoint":0.008,"App\\Test\\PlayersRouteTest::testGetPlayersSuccess":0.032,"App\\Test\\PlayersRouteTest::testErrorThrows400":0.001}}
