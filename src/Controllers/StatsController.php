@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Classes\StatusCode;
+use App\DTOs\AlltimeStatsDTO;
 use App\Repositories\StatsRepository;
 use App\Services\StatsService;
 use Exception;
@@ -24,11 +25,11 @@ class StatsController
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $stats = $this->repository->getAllStats();
+        $stats = AlltimeStatsDTO::from($this->repository->getAllStats());
         $responseBody = [
             'message' => 'Successfully retrieved from db.',
             'status' => StatusCode::HTTP_OK,
-            'data' => $stats
+            'data' => $stats->toArray()
         ];
         return $response->withJson($responseBody);
     }

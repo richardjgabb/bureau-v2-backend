@@ -19,23 +19,23 @@ class StatsRepository {
     {
         $query = $this->db->prepare(
             "SELECT
-                            COUNT(*) AS `Total Hands`,
-                            (SELECT COUNT(*) FROM players) AS `Total Players`,
-                            CONCAT('£', FORMAT(SUM(p.pot) / 100, 2)) AS `Total Pot`,
-                            CONCAT('£', FORMAT(AVG(p.pot) / 100, 2)) AS `Average Pot`,
-                            COUNT(p.winner_id) AS `Pots Won`,
-                            CONCAT('£', FORMAT(MAX(p.pot) / 100, 2)) AS `Biggest Pot`,
-                            SUM(p.is_compuls) AS `Compulsory Pots`,
+                            COUNT(*) AS `total_hands`,
+                            (SELECT COUNT(*) FROM players) AS `total_players`,
+                            CONCAT('£', FORMAT(SUM(p.pot) / 100, 2)) AS `total_pot`,
+                            CONCAT('£', FORMAT(AVG(p.pot) / 100, 2)) AS `average_pot`,
+                            COUNT(p.winner_id) AS `wins`,
+                            CONCAT('£', FORMAT(MAX(p.pot) / 100, 2)) AS `biggest_pot`,
+                            SUM(p.is_compuls) AS `compuls_pots`,
                             CONCAT(
                                 FORMAT(
                                     100 * SUM(p.dealer_id = p.winner_id) / NULLIF(COUNT(*), 0),
                                     0
                                 ),
                                 '%'
-                            ) AS `Pots won with deal`,
-                            MAX(s.total_bues) AS `Total Bues`,
-                            MAX(s.comp_bues) AS `Compulsory Bues`,
-                            CONCAT('£', FORMAT(MAX(s.biggest_bue_raw) / 100, 2)) AS `Biggest Bue`
+                            ) AS `won_with_deal`,
+                            MAX(s.total_bues) AS `bues`,
+                            MAX(s.comp_bues) AS `compuls_bues`,
+                            CONCAT('£', FORMAT(MAX(s.biggest_bue_raw) / 100, 2)) AS `biggest_bue`
                         FROM pots p
                         CROSS JOIN (
                             SELECT
