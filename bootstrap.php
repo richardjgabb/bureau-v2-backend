@@ -62,7 +62,18 @@ function createApp(): App
     );
 
     $app->add(function ($request, $handler) {
+        $allowedOrigins = [
+            'http://localhost:5173',                  // Your local development server
+            'https://cidermenbureau.netlify.app'       // Your production Netlify URL
+        ];
+
+        $origin = $request->getHeaderLine('Origin');
+
         $response = $handler->handle($request);
+
+        if (in_array($origin, $allowedOrigins)) {
+            $response = $response->withHeader('Access-Control-Allow-Origin', $origin);
+        }
 
         return $response
             ->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
