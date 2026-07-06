@@ -1,0 +1,23 @@
+# PHP Dependencies
+vendor/
+
+# Environment variables and secrets
+.env
+.env.local
+config/secrets/
+
+# Application logs and cache
+logs/
+var/
+cache/
+*.log
+
+# Unit testing / coverage
+.phpunit.result.cache
+.phpunit.cache/
+html/
+
+# Editor / System files
+.DS_Store
+.idea/
+.vscode/
