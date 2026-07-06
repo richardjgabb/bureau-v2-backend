@@ -64,7 +64,9 @@ function createApp(): App
     $app->add(function ($request, $handler) {
         $allowedOrigins = [
             'http://localhost:5173',                  // Your local development server
-            'https://cidermenbureau.netlify.app'       // Your production Netlify URL
+            'https://cidermenbureau.netlify.app',
+            'https://cidermenbureau.co.uk',
+            'https://www.cidermenbureau.co.uk'
         ];
 
         $origin = $request->getHeaderLine('Origin');
