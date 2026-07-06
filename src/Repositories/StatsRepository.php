@@ -19,30 +19,34 @@ class StatsRepository {
     {
         $query = $this->db->prepare(
             "SELECT
-                            SUM(CASE WHEN p.round > 0 THEN 1 ELSE 0 END) AS `Total Hands`,
+                            COUNT(*) AS `Total Hands`,
                             (SELECT COUNT(*) FROM players) AS `Total Players`,
                             CONCAT('£', FORMAT(SUM(p.pot) / 100, 2)) AS `Total Pot`,
-                            CONCAT('£', FORMAT(AVG(CASE WHEN p.round > 0 THEN p.pot ELSE NULL END) / 100, 2)) AS `Average Pot`,
+                            CONCAT('£', FORMAT(AVG(p.pot) / 100, 2)) AS `Average Pot`,
                             COUNT(p.winner_id) AS `Pots Won`,
                             CONCAT('£', FORMAT(MAX(p.pot) / 100, 2)) AS `Biggest Pot`,
                             SUM(p.is_compuls) AS `Compulsory Pots`,
                             CONCAT(
                                 FORMAT(
-                                    100 * SUM(CASE WHEN p.dealer_id = p.winner_id THEN 1 ELSE 0 END) / COUNT(*),
+                                    100 * SUM(p.dealer_id = p.winner_id) / NULLIF(COUNT(*), 0),
                                     0
                                 ),
                                 '%'
                             ) AS `Pots won with deal`,
                             MAX(s.total_bues) AS `Total Bues`,
-                            MAX(s.comp_bues) AS `Compulsory Bues`
+                            MAX(s.comp_bues) AS `Compulsory Bues`,
+                            CONCAT('£', FORMAT(MAX(s.biggest_bue_raw) / 100, 2)) AS `Biggest Bue`
                         FROM pots p
                         CROSS JOIN (
                             SELECT
                                 SUM(s.bued) AS total_bues,
-                                SUM(s.bued * p2.is_compuls) AS comp_bues
+                                SUM(s.bued * p2.is_compuls) AS comp_bues,
+                                MAX(CASE WHEN s.bued = 1 THEN p2.pot ELSE NULL END) AS biggest_bue_raw
                             FROM scores s
                             JOIN pots p2 ON s.pot_id = p2.id
-                        ) s;
+                            WHERE p2.round > 0
+                        ) s
+                        WHERE p.round > 0;
         ");
 
         $query->execute();
@@ -59,9 +63,17 @@ class StatsRepository {
                         CONCAT('£', FORMAT(COALESCE(AVG(p.pot), 0) / 100, 2)) AS `average_pot`,
                         COUNT(p.winner_id) AS `wins`,
                         CONCAT('£', FORMAT(COALESCE(MAX(p.pot), 0) / 100, 2)) AS `biggest_pot`,
+                        CONCAT('£', FORMAT(COALESCE(MAX(CASE WHEN s.total_bues > 0 THEN p.pot ELSE 0 END), 0) / 100, 2)) AS `biggest_bue`,
                         COALESCE(SUM(s.total_bues), 0) AS `bues`,
                         COALESCE(SUM(p.is_compuls), 0) AS `compuls_pots`,
-                        COALESCE(SUM(CASE WHEN p.is_compuls = 1 THEN s.total_bues ELSE 0 END), 0) AS `compuls_bues`
+                        COALESCE(SUM(CASE WHEN p.is_compuls = 1 THEN s.total_bues ELSE 0 END), 0) AS `compuls_bues`,
+                        CONCAT(
+                            FORMAT(
+                                100 * SUM(p.dealer_id = p.winner_id) / NULLIF(COUNT(*), 0),
+                                0
+                            ),
+                            '%'
+                        ) AS `won_with_deal`
                     FROM pots p
                     CROSS JOIN (
                         SELECT COUNT(id) AS total_players
@@ -69,12 +81,15 @@ class StatsRepository {
                         WHERE game_id = :gameId
                     ) pg
                     LEFT JOIN (
-                        SELECT pot_id, COUNT(bued) AS total_bues
+                        SELECT
+                                pot_id,
+                                COUNT(bued) AS total_bues
                         FROM scores
                         WHERE bued = 1
                         GROUP BY pot_id
                     ) s ON s.pot_id = p.id
-                    WHERE p.game_id = :gameId;
+                    WHERE p.game_id = :gameId
+                    AND p.round > 0;
         ");
         $query->execute(['gameId' => $gameId]);
         return $query->fetch();
@@ -84,18 +99,25 @@ class StatsRepository {
     {
         $query = $this->db->prepare(
             "SELECT
-                        SUM(CASE WHEN p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `wins`,
-                        SUM(s.bued) AS `bues`,
-                        SUM(CASE WHEN p.is_compuls = 1 AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `compuls_wins`,
-                        SUM(CASE WHEN p.is_compuls = 1 AND s.bued = 1 THEN 1 ELSE 0 END) AS `compuls_bues`,
-                        SUM(CASE WHEN p.dealer_id = s.player_id THEN 1 ELSE 0 END) AS `hands_dealt`,
-                        SUM(CASE WHEN p.dealer_id = s.player_id AND p.winner_id = s.player_id THEN 1 ELSE 0 END) AS `wins_with_deal`,
-                        SUM(CASE WHEN p.dealer_id = s.player_id AND s.bued = 1 THEN 1 ELSE 0 END) AS `bues_with_deal`
-
-                    FROM scores s
-                    INNER JOIN pots p ON s.pot_id = p.id
-                    WHERE s.player_id = :player_id
-                    AND p.game_id = :game_id;
+                            SUM(p.winner_id = s.player_id) AS `wins`,
+                            SUM(s.bued) AS `bues`,
+                            SUM(p.is_compuls = 1 AND p.winner_id = s.player_id) AS `compuls_wins`,
+                            SUM(p.is_compuls = 1 AND s.bued = 1) AS `compuls_bues`,
+                            SUM(p.dealer_id = s.player_id) AS `hands_dealt`,
+                            SUM(p.dealer_id = s.player_id AND p.winner_id = s.player_id) AS `wins_with_deal`,
+                            SUM(p.dealer_id = s.player_id AND s.bued = 1) AS `bues_with_deal`,
+                            CONCAT(
+                                FORMAT(
+                                    100 * SUM(p.is_compuls = 1 AND s.bued = 1) /
+                                    NULLIF(SUM(p.is_compuls = 1), 0),
+                                    0
+                                ),
+                                '%'
+                            ) AS `percent_compuls_bues`
+                        FROM scores s
+                        INNER JOIN pots p ON s.pot_id = p.id
+                        WHERE s.player_id = :player_id
+                        AND p.game_id = :game_id;
         ");
 
         $query->bindParam(":player_id", $playerId);
