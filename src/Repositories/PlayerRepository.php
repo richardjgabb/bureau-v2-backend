@@ -136,8 +136,8 @@ class PlayerRepository {
 
     private function removePlayersFromGame(array $playersToRemove, int $gameId): bool
     {
-        foreach ($playersToRemove as $player) {
-            $this->removePlayerFromGame($player['id'], $gameId);
+        foreach ($playersToRemove as $index => $playerId) {
+            $this->removePlayerFromGame((int) $playerId, $gameId);
         }
 
         return true;

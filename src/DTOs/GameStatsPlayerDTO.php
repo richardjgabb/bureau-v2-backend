@@ -21,7 +21,7 @@ class GameStatsPlayerDTO
         $this->bues = (int) $data['bues'] ?? 0;
         $this->compuls_wins = (int) $data['compuls_wins'] ?? 0;
         $this->compuls_bues = (int) $data['compuls_bues'] ?? 0;
-        $this->percent_compuls_bues = (string) $data['percent_compuls_bues'] ?? "0%";
+        $this->percent_compuls_bues = empty($data['percent_compuls_bues']) ? "0%" : (string) $data['percent_compuls_bues'] . '%';
         $this->hands_dealt = (int) $data['hands_dealt'] ?? 0;
         $this->wins_with_deal = (int) $data['wins_with_deal'] ?? 0;
         $this->bues_with_deal = (int) $data['bues_with_deal'] ?? 0;

@@ -106,13 +106,10 @@ class StatsRepository {
                             SUM(p.dealer_id = s.player_id) AS `hands_dealt`,
                             SUM(p.dealer_id = s.player_id AND p.winner_id = s.player_id) AS `wins_with_deal`,
                             SUM(p.dealer_id = s.player_id AND s.bued = 1) AS `bues_with_deal`,
-                            CONCAT(
-                                FORMAT(
-                                    100 * SUM(p.is_compuls = 1 AND s.bued = 1) /
-                                    NULLIF(SUM(p.is_compuls = 1), 0),
-                                    0
-                                ),
-                                '%'
+                            FORMAT(
+                                100 * SUM(p.is_compuls = 1 AND s.bued = 1) /
+                                NULLIF(SUM(p.is_compuls = 1), 0),
+                                0
                             ) AS `percent_compuls_bues`
                         FROM scores s
                         INNER JOIN pots p ON s.pot_id = p.id
