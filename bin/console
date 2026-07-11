@@ -9,6 +9,7 @@ use App\Console\CreateControllerCommand;
 use App\Console\CreateDTOCommand;
 use App\Console\CreateRepositoryCommand;
 use App\Console\CreateServiceCommand;
+use App\Console\DatabaseClearCommand;
 use Symfony\Component\Console\Application;
 use App\Console\DatabaseSeedCommand;
 use DI\ContainerBuilder;
@@ -36,6 +37,7 @@ $application = new Application('Bureau', '1.0.0');
 
 // Alternative to ->add(): use addCommands which takes an array
 $DbSeedCommand = $container->get(DatabaseSeedCommand::class);
+$DbClearCommand = $container->get(DatabaseClearCommand::class);
 $createControllerCommand = $container->get(CreateControllerCommand::class);
 $createRepositoryCommand = $container->get(CreateRepositoryCommand::class);
 $createServiceCommand = $container->get(CreateServiceCommand::class);
@@ -43,6 +45,7 @@ $createDTOCommand = $container->get(CreateDTOCommand::class);
 
 $application->addCommands([
     $DbSeedCommand,
+    $DbClearCommand,
     $createControllerCommand,
     $createRepositoryCommand,
     $createServiceCommand,

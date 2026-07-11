@@ -153,14 +153,16 @@ class StatsRepository {
 
                         ) AS `biggest_bue`,
                         (
-                            SELECT SUM(x.top_score)
-                            FROM (
-                                SELECT MAX(s2.score) AS top_score
-                                FROM scores s2
-                                JOIN pots p2 ON p2.id = s2.pot_id
-                                WHERE s2.player_id = :player_id
-                                GROUP BY p2.game_id
-                            ) x
+                            WITH RankedPots AS (
+                                SELECT scores.score, pots.pot, pots.game_id,
+                                    ROW_NUMBER() OVER (PARTITION BY pots.game_id ORDER BY pots.round DESC) as rn
+                                FROM pots
+                                INNER JOIN scores ON pots.id = scores.pot_id
+                                WHERE scores.player_id = :player_id
+                            )
+                            SELECT SUM(score)
+                            FROM RankedPots
+                            WHERE rn = 1
                         ) AS `total_score`,
                         (
                             SELECT pl.name
