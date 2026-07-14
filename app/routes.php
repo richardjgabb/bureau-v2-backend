@@ -5,11 +5,10 @@ declare(strict_types=1);
 use App\Controllers\GameController;
 use App\Controllers\LoginController;
 use App\Controllers\PlayerController;
-use App\Controllers\PlayerStatsController;
-use App\Controllers\RegisterUserController;
 use App\Controllers\ScoreboardController;
 use App\Controllers\ScoresController;
 use App\Controllers\StatsController;
+use App\Middleware\JwtMiddleware;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 
@@ -41,8 +40,8 @@ return function (App $app) {
         });
 
         $app->get('/stats', [StatsController::class, 'index']);
-        $app->get('/login', LoginController::class);
         $app->get('/newGame', [GameController::class, 'newGame']);
-        $app->post('/register', RegisterUserController::class);
-    });
+    })->add(new JwtMiddleware());
+
+    $app->post('/api/login', LoginController::class);
 };
