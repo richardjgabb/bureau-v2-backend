@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Classes\StatusCode;
 use App\DTOs\GameEditDTO;
+use App\DTOs\NewGameDTO;
 use App\Orchestrators\GameOrchestrator;
 use Exception;
 use Psr\Http\Message\ServerRequestInterface;
@@ -47,11 +48,11 @@ class GameController
         $data = $request->getParsedBody();
 
         try {
-            $newGame = $this->orchestrator->createNewGame($data);
+            $newGame = NewGameDTO::from($this->orchestrator->createNewGame($data));
             $responseBody = [
                 'message' => 'Game successfully created.',
                 'status' => StatusCode::HTTP_CREATED,
-                'data' => $newGame
+                'data' => $newGame->toArray()
             ];
         } catch (Exception $e) {
             $responseBody = [

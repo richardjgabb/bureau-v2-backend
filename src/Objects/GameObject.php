@@ -9,10 +9,10 @@ use JsonSerializable;
 class GameObject implements JsonSerializable
 {
     public readonly int $id;
-    private string $name;
-    private int $buyIn;
+    public string $name;
+    public int $buyIn;
     private int $round;
-    private ?array $players;
+    public ?array $players;
     public ?array $pots;
 
     public function __construct(int $id, string $name, int $buyIn, ?array $players = null, ?array $pots = null)
