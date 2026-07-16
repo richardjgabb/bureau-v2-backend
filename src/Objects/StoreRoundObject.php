@@ -34,7 +34,7 @@ class StoreRoundObject
     }
 
     private function filterFrozenPlayers(array $players): array {
-        return array_filter($players, fn ($player) => !$player['isFrozen']);
+        return array_filter($players, fn ($player) => !($player['isFrozen'] ?? false));
     }
 
     public function isSplit(): bool {
