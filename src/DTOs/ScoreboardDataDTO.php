@@ -35,6 +35,9 @@ class ScoreboardDataDTO
             }
 
             $scoreboard[$roundNum]['scores'][$row['player_id']] = $row['score'];
+            if ($row['bued'] === 1) {
+                $scoreboard[$roundNum]['bues'][] = $row['player_id'];
+            }
         }
 
         return array_values($scoreboard);

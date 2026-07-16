@@ -100,6 +100,7 @@ class ScoreRepository {
             SELECT `scores`.`player_id`,
                    `pots`.`round`,
                    `scores`.`score`,
+                   `scores`.`bued`,
                    `pots`.`winner_id`,
                    `pots`.`pot`
               FROM `scores`
