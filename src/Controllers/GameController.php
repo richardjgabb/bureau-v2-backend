@@ -68,7 +68,8 @@ class GameController
         $data = GameEditDTO::from((int) $args['gameId'], $request->getParsedBody());
 
         try {
-            $updatedGame = $this->orchestrator->updateGame($data);
+            $updates = $this->orchestrator->updateGame($data);
+            $updatedGame = $this->orchestrator->getGameData($args['gameId']);
             $responseBody = [
                 'message' => 'Game successfully updated.',
                 'status' => StatusCode::HTTP_OK,
