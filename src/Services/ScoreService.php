@@ -53,7 +53,7 @@ class ScoreService
 
     public function updatePlayersScores(int $gameId, array $players): bool
     {
-        $latestPot = $this->potRepository->getLatestPotForGame($gameId);
+        $latestPot = $this->potRepository->getLatestPotForGame($gameId)['id'] ?? null;
 
         if (!$latestPot) {
             $latestPot = 0;

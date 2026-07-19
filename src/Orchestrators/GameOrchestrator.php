@@ -84,13 +84,9 @@ class GameOrchestrator
     {
         $existingPlayers = $this->playerRepository->getPlayerIdsForGame($data->id);
 
-        $newPlayers = array_filter(array_keys($data->players), function ($player) use ($existingPlayers) {
-            return !in_array($player, $existingPlayers);
-        });
+        $newPlayers = array_values(array_diff(array_keys($data->players), $existingPlayers));
 
-        $playersToRemove = array_filter($existingPlayers, function ($player) use ($data) {
-            return !array_key_exists($player, $data->players);
-        });
+        $playersToRemove = array_values(array_diff($existingPlayers, array_keys($data->players)));
 
         $game = $this->gameRepository->updateGame($data->id, $data->name, $data->buyIn);
         $players = $this->playerRepository->updatePlayersForGame( $data->id, $newPlayers, $playersToRemove);
