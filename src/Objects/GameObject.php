@@ -41,10 +41,14 @@ class GameObject implements JsonSerializable
     private function computeLatestPotSize(): int
     {
         $latestPot = $this->pots[count($this->pots) - 1] ?? null;
+        $potWasSplit = $latestPot->pot_winner === null;
         if (!$latestPot || ($latestPot && $latestPot->amountOfBues === 0 && $latestPot->pot_winner !== null)) {
             return 0;
-        } else {
-            return $this->pots[count($this->pots) - 1]->pot;
+        } elseif ($latestPot && $latestPot->pot_winner !== null) {
+            return $latestPot->amountOfBues * $latestPot->pot;
+        } elseif ($latestPot && $potWasSplit) {
+            return $latestPot->pot + ($latestPot->amountOfBues * $latestPot->pot);
         }
+        return $latestPot->pot;
     }
 }

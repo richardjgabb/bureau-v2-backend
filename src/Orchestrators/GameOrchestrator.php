@@ -70,10 +70,11 @@ class GameOrchestrator
             $createdPlayers = $this->playerRepository->createNewPlayers($newPlayers);
             $players = array_merge($existingPlayers, $createdPlayers);
         }
+        $playersToAdd = isset($players) ? array_column($players, 'id') : array_column($existingPlayers, 'id');
 
         $gameId = $this->gameRepository->createNewGame($data['gameName'], (int) $data['buyIn']);
 
-        $this->playerRepository->linkPlayersToGame($players ?? $existingPlayers, $gameId);
+        $this->playerRepository->linkPlayersToGame($playersToAdd, $gameId);
         $potId = $this->potRepository->addNewPot($gameId, 0, null, 0, 0, null);
         $this->scoreRepository->initiateScoresForAllPlayers($players ?? $existingPlayers, $potId);
 
